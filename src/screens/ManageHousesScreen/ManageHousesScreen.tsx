@@ -20,7 +20,7 @@ const houses = [
 
 const ManageHousesScreen: React.FC<Props> = ({ navigation }) => {
   const handleSelectHouse = (house: { id: string; name: string }) => {
-    navigation.navigate('HouseDetail', {
+    navigation.navigate('HouseOverview', {
       id: house.id,
       name: house.name,
     });

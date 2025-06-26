@@ -29,6 +29,7 @@ const Tab = createBottomTabNavigator();
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [selectedHouse, setSelectedHouse] = useState(houses[0]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showPlusMenu, setShowPlusMenu] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -38,6 +39,23 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             {selectedHouse.name} ⌄
           </Text>
         </TouchableOpacity>
+      ),
+      headerRight: () => (
+        <View style={styles.headerIcons}>
+          <TouchableOpacity
+            style={styles.iconCircle}
+            onPress={() => navigation.navigate('Notifications')}
+          >
+            <Icon name="bell-outline" size={18} color="#007bff" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.iconCircle}
+            onPress={() => setShowPlusMenu(true)}
+          >
+            <Icon name="plus" size={18} color="#007bff" />
+          </TouchableOpacity>
+        </View>
       ),
     });
   }, [navigation, selectedHouse]);
@@ -49,7 +67,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Tabs hiển thị nội dung các phòng */}
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,
@@ -78,7 +95,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         />
       </Tab.Navigator>
 
-      {/* Dropdown Modal */}
+      {/* Dropdown chọn nhà */}
       <Modal visible={showDropdown} transparent animationType="fade">
         <TouchableOpacity
           style={styles.modalOverlay}
@@ -113,6 +130,53 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* Popup menu dấu cộng */}
+      <Modal visible={showPlusMenu} transparent animationType="fade">
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowPlusMenu(false)}
+        >
+          <View style={styles.plusMenuWrapper}>
+            <View style={styles.plusMenu}>
+              <TouchableOpacity
+                style={styles.plusMenuItem}
+                onPress={() => {
+                  setShowPlusMenu(false);
+                  navigation.navigate('AddDevice');
+                  console.log('➕ Thêm thiết bị');
+                  // navigation.navigate('AddDevice');
+                }}
+              >
+                <Text>➕ Thêm thiết bị</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.plusMenuItem}
+                onPress={() => {
+                  setShowPlusMenu(false);
+                  console.log('📷 Quét mã');
+                  // navigation.navigate('QRCodeScanner');
+                }}
+              >
+                <Text>📷 Quét</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.plusMenuItem}
+                onPress={() => {
+                  setShowPlusMenu(false);
+                  console.log('🧠 Tạo tình huống thông minh');
+                  // navigation.navigate('SmartScene');
+                }}
+              >
+                <Text>🧠 Tạo tình huống thông minh</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
@@ -128,6 +192,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: '#007bff',
+  },
+  headerIcons: {
+    flexDirection: 'row',
+    marginRight: 10,
+  },
+  iconCircle: {
+    marginHorizontal: 6,
+    borderWidth: 1,
+    borderColor: '#007bff',
+    borderRadius: 12,
+    padding: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modalOverlay: {
     flex: 1,
@@ -156,5 +233,26 @@ const styles = StyleSheet.create({
   manageText: {
     fontWeight: '600',
     color: '#1a53ff',
+  },
+  plusMenuWrapper: {
+    position: 'absolute',
+    top: 50,
+    right: 10,
+  },
+  plusMenu: {
+    width: 220,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    paddingVertical: 8,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  plusMenuItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#ccc',
   },
 });
