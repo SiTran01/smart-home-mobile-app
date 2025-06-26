@@ -1,3 +1,4 @@
+// src/screens/HouseDetailScreen.tsx
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { RouteProp } from '@react-navigation/native';
