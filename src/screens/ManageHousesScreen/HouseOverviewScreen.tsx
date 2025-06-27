@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../../../App';
+import { RootStackParamList } from '../../navigation/RootNavigator';
 
 type HouseOverviewRouteProp = RouteProp<RootStackParamList, 'HouseOverview'>;
 

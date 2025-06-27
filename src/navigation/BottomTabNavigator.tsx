@@ -1,12 +1,34 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
 import MiHomeStack from './stacks/MiHomeStack';
 import AutomationStack from './stacks/AutomationStack';
 import AccessoriesStack from './stacks/AccessoriesStack';
 import ProfileStack from './stacks/ProfileStack';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const Tab = createBottomTabNavigator();
+
+type TabBarIconProps = {
+  color: string;
+  size: number;
+};
+
+const renderHomeIcon = ({ color, size }: TabBarIconProps) => (
+  <Icon name="home-outline" color={color} size={size} />
+);
+
+const renderAccessoriesIcon = ({ color, size }: TabBarIconProps) => (
+  <Icon name="power-plug-outline" color={color} size={size} />
+);
+
+const renderAutomationIcon = ({ color, size }: TabBarIconProps) => (
+  <Icon name="cog-outline" color={color} size={size} />
+);
+
+const renderProfileIcon = ({ color, size }: TabBarIconProps) => (
+  <Icon name="account-outline" color={color} size={size} />
+);
 
 const BottomTabNavigator = () => (
   <Tab.Navigator>
@@ -15,9 +37,7 @@ const BottomTabNavigator = () => (
       component={MiHomeStack}
       options={{
         headerShown: false,
-        tabBarIcon: ({ color, size }) => (
-          <Icon name="home-outline" color={color} size={size} />
-        ),
+        tabBarIcon: renderHomeIcon,
         tabBarLabel: 'Home',
       }}
     />
@@ -26,33 +46,25 @@ const BottomTabNavigator = () => (
       component={AccessoriesStack}
       options={{
         headerShown: false,
-        tabBarIcon: ({ color, size }) => (
-          <Icon name="power-plug-outline" color={color} size={size} />
-        ),
+        tabBarIcon: renderAccessoriesIcon,
         tabBarLabel: 'Accessories',
       }}
     />
-
     <Tab.Screen
       name="AutomationTab"
       component={AutomationStack}
       options={{
         headerShown: false,
-        tabBarIcon: ({ color, size }) => (
-          <Icon name="cog-outline" color={color} size={size} />
-        ),
+        tabBarIcon: renderAutomationIcon,
         tabBarLabel: 'Automation',
       }}
     />
-
     <Tab.Screen
       name="ProfileTab"
       component={ProfileStack}
       options={{
         headerShown: false,
-        tabBarIcon: ({ color, size }) => (
-          <Icon name="account-outline" color={color} size={size} />
-        ),
+        tabBarIcon: renderProfileIcon,
         tabBarLabel: 'Profile',
       }}
     />

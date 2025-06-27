@@ -26,7 +26,12 @@ const dummyNotifications = [
 const NotificationsScreen: React.FC = () => {
   const renderItem = ({ item }: { item: typeof dummyNotifications[0] }) => (
     <View style={styles.notificationItem}>
-      <Icon name="bell-ring-outline" size={24} color="#007bff" style={styles.icon} />
+      <Icon
+        name="bell-ring-outline"
+        size={24}
+        color="#007bff"
+        style={styles.icon}
+      />
       <View style={styles.textContainer}>
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.description}>{item.description}</Text>
@@ -41,7 +46,7 @@ const NotificationsScreen: React.FC = () => {
         data={dummyNotifications}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        contentContainerStyle={{ padding: 16 }}
+        contentContainerStyle={styles.contentContainer}
       />
     </View>
   );
@@ -53,6 +58,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  contentContainer: {
+    padding: 16,
   },
   notificationItem: {
     flexDirection: 'row',

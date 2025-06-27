@@ -1,14 +1,9 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../../App';
+import { RootStackParamList } from '../../navigation/RootNavigator';
 import Icon from 'react-native-vector-icons/FontAwesome';
+
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ManageHouses'>;
 
@@ -47,7 +42,7 @@ const ManageHousesScreen: React.FC<Props> = ({ navigation }) => {
       {/* Nút tròn thêm nhà */}
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => alert('Chức năng Thêm nhà đang phát triển')}
+        onPress={() => Alert.alert('Chức năng Thêm nhà đang phát triển')}
       >
         <Icon name="plus" size={24} color="#fff" />
       </TouchableOpacity>
