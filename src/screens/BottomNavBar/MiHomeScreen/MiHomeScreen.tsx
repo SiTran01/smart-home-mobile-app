@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useState } from 'react';
 import { ScrollView, Text } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 
-import TopBar from './components/TopBar/TopBar';
+import TopBar from './components/TopBar/MiHomeHeader';
 import HouseDropdownModal from './components/TopBar/components/HouseDropdownModal';
 import PlusMenuModal from './components/TopBar/components/PlusMenuModal';
 

@@ -9,7 +9,7 @@ interface Props {
   onPlusPress: () => void;
 }
 
-const TopBar: React.FC<Props> = ({
+const MiHomeHeader: React.FC<Props> = ({
   selectedHouseName,
   onHousePress,
   onOpenNotifications,
@@ -33,7 +33,7 @@ const TopBar: React.FC<Props> = ({
   );
 };
 
-export default TopBar;
+export default MiHomeHeader;
 
 const styles = StyleSheet.create({
   headerContainer: {
