@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useLayoutEffect, useState, useCallback } from 'react';
 import { ScrollView, Text } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 
@@ -22,19 +22,20 @@ const MiHomeScreen = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showPlusMenu, setShowPlusMenu] = useState(false);
 
-  // ⚡️ Update header to include TopBar
+  const renderHeader = useCallback(() => (
+    <TopBar
+      selectedHouseName={selectedHouse.name}
+      onHousePress={() => setShowDropdown(true)}
+      onOpenNotifications={() => navigation.navigate('Notifications')}
+      onPlusPress={() => setShowPlusMenu(true)}
+    />
+  ), [navigation, selectedHouse]);
+
   useLayoutEffect(() => {
     navigation.setOptions({
-      header: () => (
-        <TopBar
-          selectedHouseName={selectedHouse.name}
-          onHousePress={() => setShowDropdown(true)}
-          onOpenNotifications={() => navigation.navigate('Notifications')}
-          onPlusPress={() => setShowPlusMenu(true)}
-        />
-      ),
+      header: renderHeader,
     });
-  }, [navigation, selectedHouse]);
+  }, [navigation, renderHeader]);
 
   const handleHouseSelect = (house: typeof selectedHouse) => {
     setSelectedHouse(house);

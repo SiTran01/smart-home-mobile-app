@@ -1,15 +1,28 @@
-import React from 'react';
+import React, { useLayoutEffect, useCallback } from 'react';
 import { ScrollView, Text } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import AutomationHeader from './components/Header/AutomationHeader';
 
 const AutomationScreen = () => {
-  const route = useRoute<any>(); // 👈 bỏ qua kiểu tường minh
+  const route = useRoute<any>();
+  const navigation = useNavigation<any>();
   const { houseId } = route.params || {};
+
+  const renderHeader = useCallback(() => (
+    <AutomationHeader
+      onAddAutomation={() => navigation.navigate('AddAutomation')}
+    />
+  ), [navigation]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      header: renderHeader,
+    });
+  }, [navigation, renderHeader]);
 
   return (
     <ScrollView>
-      <Text>Thiết bị trong Tất cả - Nhà ID: {houseId}</Text>
-      
+      <Text>Automation Screen - Nhà ID: {houseId}</Text>
     </ScrollView>
   );
 };
