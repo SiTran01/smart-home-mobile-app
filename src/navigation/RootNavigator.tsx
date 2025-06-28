@@ -8,6 +8,7 @@ import HouseOverviewScreen from '../screens/ManageHousesScreen/HouseOverviewScre
 import NotificationsScreen from '../screens/NotificationsScreen/NotificationsScreen';
 import AddDeviceScreen from '../screens/AddDeviceScreen/AddDeviceScreen';
 import AddAutomation from '../screens/AddAutomationScreen/AddAutomationScreen';
+import UserProfile from '../screens/User/UserProfileScreen';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -18,6 +19,7 @@ export type RootStackParamList = {
   Notifications: undefined;
   AddDevice: undefined;
   AddAutomation: undefined;
+  UserProfile: undefined; // Thêm UserProfile nếu cần
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -36,6 +38,7 @@ const RootNavigator = () => {
       />
       <Stack.Screen name="AddDevice" component={AddDeviceScreen} options={{ headerShown: true }} />
       <Stack.Screen name="AddAutomation" component={AddAutomation} options={{ headerShown: true }} />
+      <Stack.Screen name="UserProfile" component={UserProfile} options={{ headerShown: true }} />
     </Stack.Navigator>
   );
 };
