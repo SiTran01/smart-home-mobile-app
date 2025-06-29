@@ -1,48 +1,47 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import { ScrollView, TouchableOpacity, Text, Alert, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import useUserStore from '../../store/useUserStore';
+import AvatarRow from './components/AvatarRow';
+import NameRow from './components/NameRow';
+import EmailRow from './components/EmailRow';
+import TwitterRow from './components/TwitterRow';
 
 const UserProfileScreen: React.FC = () => {
-  const user = {
-    avatar: 'https://i.pravatar.cc/150?img=3',
-    nickname: 'vinh',
-    email: 'tvinh0081@gmail.com',
-    twitter: 'không ràng buộc',
+  const user = useUserStore(state => state.user);
+  const setUser = useUserStore(state => state.setUser);
+
+  const handleLogout = async () => {
+    Alert.alert('Đăng xuất', 'Bạn có chắc muốn đăng xuất?', [
+      { text: 'Hủy', style: 'cancel' },
+      {
+        text: 'Đăng xuất',
+        style: 'destructive',
+        onPress: async () => {
+          await AsyncStorage.removeItem('token');
+          setUser(null);
+        },
+      },
+    ]);
   };
 
+  if (!user) {
+    return (
+      <ScrollView contentContainerStyle={styles.centered}>
+        <Text>Chưa đăng nhập</Text>
+      </ScrollView>
+    );
+  }
+
   return (
-    <ScrollView style={styles.container}>
-      {/* Ảnh đại diện */}
-      <TouchableOpacity style={styles.row}>
-        <Text style={styles.label}>Ảnh đại diện</Text>
-        <View style={styles.avatarBlock}>
-          <Image source={{ uri: user.avatar }} style={styles.avatar} />
-          <MaterialIcon name="chevron-right" size={24} color="#888" />
-        </View>
-      </TouchableOpacity>
+    <ScrollView style={{ backgroundColor: '#fff' }}>
+      <AvatarRow picture={user.picture} />
+      <NameRow name={user.name} />
+      <EmailRow email={user.email} />
+      <TwitterRow />
 
-      {/* Biệt danh */}
-      <TouchableOpacity style={styles.row}>
-        <Text style={styles.label}>Biệt danh</Text>
-        <View style={styles.valueBlock}>
-          <Text style={styles.value}>{user.nickname}</Text>
-          <MaterialIcon name="chevron-right" size={24} color="#888" />
-        </View>
-      </TouchableOpacity>
-
-      {/* Email */}
-      <View style={styles.row}>
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.value}>{user.email}</Text>
-      </View>
-
-      {/* Twitter */}
-      <TouchableOpacity style={styles.row}>
-        <Text style={styles.label}>Twitter</Text>
-        <View style={styles.valueBlock}>
-          <Text style={styles.value}>{user.twitter}</Text>
-          <MaterialIcon name="chevron-right" size={24} color="#888" />
-        </View>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutText}>Đăng xuất</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -51,40 +50,22 @@ const UserProfileScreen: React.FC = () => {
 export default UserProfileScreen;
 
 const styles = StyleSheet.create({
-  container: {
+  centered: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  row: {
-    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    justifyContent: 'space-between',
   },
-  label: {
+  logoutButton: {
+    marginTop: 40,
+    marginHorizontal: 20,
+    backgroundColor: '#e53935',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  logoutText: {
+    color: '#fff',
     fontSize: 16,
-    color: '#333',
-  },
-  avatarBlock: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 8,
-  },
-  valueBlock: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  value: {
-    fontSize: 16,
-    color: '#555',
-    marginRight: 8,
+    fontWeight: '600',
   },
 });
