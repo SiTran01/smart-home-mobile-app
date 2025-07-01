@@ -2,20 +2,21 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
+interface User {
+  name: string;
+  email: string;
+  picture?: string;
+}
+
 interface Props {
+  user: User;
   onPress: () => void;
 }
 
-const UserCard: React.FC<Props> = ({ onPress }) => {
-  const user = {
-    name: 'Nguyễn Văn A',
-    email: 'nguyenvana@example.com',
-    avatar: 'https://i.pravatar.cc/150?img=3',
-  };
-
+const UserCard: React.FC<Props> = ({ user, onPress }) => {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Image source={{ uri: user.avatar }} style={styles.avatar} />
+      <Image source={{ uri: user.picture }} style={styles.picture} />
 
       <View style={styles.infoContainer}>
         <Text style={styles.name}>{user.name}</Text>
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
   },
-  avatar: {
+  picture: {
     width: 60,
     height: 60,
     borderRadius: 30,
