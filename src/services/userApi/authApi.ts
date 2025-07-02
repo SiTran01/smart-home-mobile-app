@@ -1,5 +1,5 @@
 // src/api/authApi.ts
-import api from '../axiosInstance'; // ✅ import instance đã config
+import api from '../axiosInstance';
 
 export interface User {
   _id: string;
@@ -17,11 +17,16 @@ export const loginUser = async (email: string, password: string): Promise<User> 
 
 // ✅ Hàm fetch user info từ token
 export const fetchUserInfo = async (token: string): Promise<User> => {
-  console.log('[fetchUserInfo] baseURL:', api.defaults.baseURL);
   const response = await api.get<User>('/auth/user', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
+  return response.data;
+};
+
+// ✅ Hàm login Google user
+export const loginGoogleUser = async (idToken: string): Promise<User> => {
+  const response = await api.post<User>('/auth/google', { idToken });
   return response.data;
 };

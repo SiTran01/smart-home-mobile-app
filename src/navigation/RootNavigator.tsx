@@ -4,7 +4,7 @@ import useUserStore from '../store/useUserStore'; // ✅ import Zustand store
 
 import LoginScreen from '../screens/LoginScreen/LoginScreen';
 import HomeScreen from '../screens/HomeScreen/HomeScreen';
-import ManageHousesScreen from '../screens/ManageHousesScreen/ManageHousesScreen';
+import ManageHousesScreen from '../screens/ManageHousesScreen/ManageHousesScreen/ManageHousesScreen';
 import HouseOverviewScreen from '../screens/ManageHousesScreen/HouseOverviewScreen';
 import NotificationsScreen from '../screens/NotificationsScreen/NotificationsScreen';
 import AddDeviceScreen from '../screens/AddDeviceScreen/AddDeviceScreen';

@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState, useCallback } from 'react';
+import React, { useLayoutEffect, useCallback, useState, useEffect } from 'react';
 import { ScrollView, Text } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 
@@ -6,25 +6,29 @@ import TopBar from './components/TopBar/MiHomeHeader';
 import HouseDropdownModal from './components/TopBar/components/HouseDropdownModal';
 import PlusMenuModal from './components/TopBar/components/PlusMenuModal';
 
-const houses = [
-  { id: '1', name: 'Nhà A' },
-  { id: '2', name: 'Nhà B' },
-  { id: '3', name: 'Nhà C' },
-  { id: '4', name: 'Nhà D' },
-];
+import useHomeStore from '../../../store/useHomeStore';
+import { Home } from '../../../services/homeApi/homeApi';
 
 const MiHomeScreen = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
 
-  const { houseId } = route.params || {};
-  const [selectedHouse, setSelectedHouse] = useState(houses[0]);
+  const { homes } = useHomeStore(); // ✅ lấy homes từ store
+
+  const [selectedHouse, setSelectedHouse] = useState<Home | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showPlusMenu, setShowPlusMenu] = useState(false);
 
+  // ✅ set selectedHouse mặc định khi homes thay đổi
+  useEffect(() => {
+    if (homes.length > 0 && !selectedHouse) {
+      setSelectedHouse(homes[0]);
+    }
+  }, [homes, selectedHouse]);
+
   const renderHeader = useCallback(() => (
     <TopBar
-      selectedHouseName={selectedHouse.name}
+      selectedHouseName={selectedHouse?.name || 'Chọn nhà'}
       onHousePress={() => setShowDropdown(true)}
       onOpenNotifications={() => navigation.navigate('Notifications')}
       onPlusPress={() => setShowPlusMenu(true)}
@@ -37,7 +41,7 @@ const MiHomeScreen = () => {
     });
   }, [navigation, renderHeader]);
 
-  const handleHouseSelect = (house: typeof selectedHouse) => {
+  const handleHouseSelect = (house: Home) => {
     setSelectedHouse(house);
     setShowDropdown(false);
   };
@@ -45,15 +49,17 @@ const MiHomeScreen = () => {
   return (
     <>
       <ScrollView>
-        <Text>Thiết bị trong Tất cả - Nhà ID: {houseId}</Text>
-        {[...Array(20)].map((_, i) => (
-          <Text key={i}>Thiết bị {i + 1} - {selectedHouse.name}</Text>
+        <Text>Thiết bị trong Tất cả - Nhà ID: {selectedHouse?._id}</Text>
+        {homes.map((home, index) => (
+          <Text key={home._id || index}>
+            Nhà {index + 1} - {home.name}
+          </Text>
         ))}
       </ScrollView>
 
       <HouseDropdownModal
         visible={showDropdown}
-        houses={houses}
+        houses={homes}
         onSelect={handleHouseSelect}
         onClose={() => setShowDropdown(false)}
         onManagePress={() => {

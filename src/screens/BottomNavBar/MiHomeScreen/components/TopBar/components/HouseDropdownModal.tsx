@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 
-type House = { id: string; name: string };
+type House = { _id: string; name: string };
 
 interface Props {
   visible: boolean;
@@ -17,7 +17,7 @@ const HouseDropdownModal: React.FC<Props> = ({ visible, houses, onSelect, onClos
       <View style={styles.wrapper}>
         <View style={styles.dropdown}>
           {houses.map((house) => (
-            <TouchableOpacity key={house.id} onPress={() => onSelect(house)} style={styles.item}>
+            <TouchableOpacity key={house._id} onPress={() => onSelect(house)} style={styles.item}>
               <Text>{house.name}</Text>
             </TouchableOpacity>
           ))}
