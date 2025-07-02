@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import RootNavigator from './src/navigation/RootNavigator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useUserStore from './src/store/useUserStore';
-import { fetchUserInfo } from './src/services/api';
+import { fetchUserInfo } from './src/services/userApi/userApi';
 import { ActivityIndicator, View } from 'react-native'; // ✅ import thêm
 
 const App = () => {
