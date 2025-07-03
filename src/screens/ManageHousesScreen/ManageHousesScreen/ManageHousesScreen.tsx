@@ -16,7 +16,7 @@ const ManageHousesScreen: React.FC<Props> = ({ navigation }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const handleSelectHouse = (house: { _id: string; name: string }) => {
-    navigation.navigate('HouseOverview', {
+    navigation.navigate('SettingHome', {
       id: house._id,
       name: house.name,
     });

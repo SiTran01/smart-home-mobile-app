@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useCallback, useState, useEffect } from 'react';
+import React, { useLayoutEffect, useCallback, useEffect } from 'react';
 import { ScrollView, Text } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 
@@ -13,18 +13,21 @@ const MiHomeScreen = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
 
-  const { homes } = useHomeStore(); // ✅ lấy homes từ store
+  const { homes, selectedHomeId, setSelectedHomeId } = useHomeStore();
 
-  const [selectedHouse, setSelectedHouse] = useState<Home | null>(null);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [showPlusMenu, setShowPlusMenu] = useState(false);
+  const selectedHouse = homes.find(h => h._id === selectedHomeId) || null;
 
-  // ✅ set selectedHouse mặc định khi homes thay đổi
+  const [showDropdown, setShowDropdown] = React.useState(false);
+  const [showPlusMenu, setShowPlusMenu] = React.useState(false);
+
+  // ✅ Khi homes thay đổi ➔ đảm bảo selectedHomeId hợp lệ
   useEffect(() => {
-    if (homes.length > 0 && !selectedHouse) {
-      setSelectedHouse(homes[0]);
+    if (homes.length === 0) {
+      setSelectedHomeId(null);
+    } else if (!selectedHouse) {
+      setSelectedHomeId(homes[0]._id);
     }
-  }, [homes, selectedHouse]);
+  }, [homes, selectedHouse, setSelectedHomeId]);
 
   const renderHeader = useCallback(() => (
     <TopBar
@@ -42,7 +45,7 @@ const MiHomeScreen = () => {
   }, [navigation, renderHeader]);
 
   const handleHouseSelect = (house: Home) => {
-    setSelectedHouse(house);
+    setSelectedHomeId(house._id);
     setShowDropdown(false);
   };
 

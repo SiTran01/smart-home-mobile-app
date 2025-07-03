@@ -5,7 +5,7 @@ import useUserStore from '../store/useUserStore'; // ✅ import Zustand store
 import LoginScreen from '../screens/LoginScreen/LoginScreen';
 import HomeScreen from '../screens/HomeScreen/HomeScreen';
 import ManageHousesScreen from '../screens/ManageHousesScreen/ManageHousesScreen/ManageHousesScreen';
-import HouseOverviewScreen from '../screens/ManageHousesScreen/HouseOverviewScreen';
+import HouseOverviewScreen from '../screens/ManageHousesScreen/SettingHomeScreen/SettingHomeScreen';
 import NotificationsScreen from '../screens/NotificationsScreen/NotificationsScreen';
 import AddDeviceScreen from '../screens/AddDeviceScreen/AddDeviceScreen';
 import AddAutomation from '../screens/AddAutomationScreen/AddAutomationScreen';
@@ -16,7 +16,7 @@ export type RootStackParamList = {
   Home: undefined;
   HouseDetail: { id: string; name: string };
   ManageHouses: undefined;
-  HouseOverview: { id: string; name: string };
+  SettingHome: { id: string; name: string };
   Notifications: undefined;
   AddDevice: undefined;
   AddAutomation: undefined;
@@ -34,7 +34,7 @@ const RootNavigator = () => {
         <>
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="ManageHouses" component={ManageHousesScreen} options={{ headerShown: true }} />
-          <Stack.Screen name="HouseOverview" component={HouseOverviewScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="SettingHome" component={HouseOverviewScreen} options={{ headerShown: true }} />
           <Stack.Screen
             name="Notifications"
             component={NotificationsScreen}
