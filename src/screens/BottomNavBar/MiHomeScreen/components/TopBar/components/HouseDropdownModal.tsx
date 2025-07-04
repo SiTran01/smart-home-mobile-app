@@ -9,18 +9,34 @@ interface Props {
   onSelect: (house: House) => void;
   onClose: () => void;
   onManagePress: () => void;
+  onManageRoomsPress: () => void; // ✅ thêm prop mới
 }
 
-const HouseDropdownModal: React.FC<Props> = ({ visible, houses, onSelect, onClose, onManagePress }) => (
+const HouseDropdownModal: React.FC<Props> = ({
+  visible,
+  houses,
+  onSelect,
+  onClose,
+  onManagePress,
+  onManageRoomsPress,
+}) => (
   <Modal visible={visible} transparent animationType="fade">
     <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
       <View style={styles.wrapper}>
         <View style={styles.dropdown}>
+          {/* 🛠️ Quản lý phòng */}
+          <TouchableOpacity onPress={onManageRoomsPress} style={[styles.item, styles.manage]}>
+            <Text style={styles.manageText}>🛠️ Quản lý phòng</Text>
+          </TouchableOpacity>
+
+          {/* Danh sách Home */}
           {houses.map((house) => (
             <TouchableOpacity key={house._id} onPress={() => onSelect(house)} style={styles.item}>
               <Text>{house.name}</Text>
             </TouchableOpacity>
           ))}
+
+          {/* 🛠️ Quản lý nhà */}
           <TouchableOpacity onPress={onManagePress} style={[styles.item, styles.manage]}>
             <Text style={styles.manageText}>🛠️ Quản lý nhà</Text>
           </TouchableOpacity>

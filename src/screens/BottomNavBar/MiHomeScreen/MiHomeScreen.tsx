@@ -7,7 +7,7 @@ import HouseDropdownModal from './components/TopBar/components/HouseDropdownModa
 import PlusMenuModal from './components/TopBar/components/PlusMenuModal';
 
 import useHomeStore from '../../../store/useHomeStore';
-import { Home } from '../../../services/homeApi/homeApi';
+import { Home } from '../../../services/api/homeApi';
 
 const MiHomeScreen = () => {
   const route = useRoute<any>();
@@ -65,6 +65,12 @@ const MiHomeScreen = () => {
         houses={homes}
         onSelect={handleHouseSelect}
         onClose={() => setShowDropdown(false)}
+        onManageRoomsPress={() => {
+          setShowDropdown(false);
+          if (selectedHouse) {
+            navigation.navigate('ManageRoom', { homeId: selectedHouse._id });
+          }
+        }}
         onManagePress={() => {
           setShowDropdown(false);
           navigation.navigate('ManageHouses');

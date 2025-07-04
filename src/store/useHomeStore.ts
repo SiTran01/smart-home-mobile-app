@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Home } from '../services/homeApi/homeApi';
+import { Home } from '../services/api/homeApi';
 
 interface HomeStore {
   homes: Home[];

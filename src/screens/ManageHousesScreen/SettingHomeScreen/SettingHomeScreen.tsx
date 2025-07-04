@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
-import { RouteProp, useRoute } from '@react-navigation/native';
+import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { RootStackParamList } from '../../../navigation/RootNavigator';
@@ -9,19 +9,26 @@ import SettingHomeOptionRow from './components/SettingOptionRow';
 import DeleteHomeButton from './components/DeleteHomeButton';
 import RenameHomeModal from './components/RenameHomeModal';
 
-import { updateHome } from '../../../services/homeApi/homeApi';
+import { updateHome } from '../../../services/api/homeApi';
 import useHomeStore from '../../../store/useHomeStore';
+import useRoomStore from '../../../store/useRoomStore'; // ✅ import room store
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type SettingHomeRouteProp = RouteProp<RootStackParamList, 'SettingHome'>;
 
 const SettingHomeScreen: React.FC = () => {
   const route = useRoute<SettingHomeRouteProp>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
   const { id, name } = route.params;
 
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [homeName, setHomeName] = useState(name);
 
   const updateHomeInStore = useHomeStore((state) => state.updateHome);
+
+  const rooms = useRoomStore((state) => state.rooms); // ✅ lấy tất cả rooms
+  const roomsInThisHome = rooms.filter((room) => room.home === id); // ✅ filter theo homeId
 
   const handleRename = async (newName: string) => {
     if (!newName || newName === homeName) {
@@ -38,8 +45,8 @@ const SettingHomeScreen: React.FC = () => {
 
       const updatedHome = await updateHome(token, id, { name: newName });
 
-      updateHomeInStore(updatedHome); // ✅ update store
-      setHomeName(updatedHome.name); // ✅ update local UI
+      updateHomeInStore(updatedHome);
+      setHomeName(updatedHome.name);
 
       Alert.alert('Thành công', `Đã đổi tên thành "${updatedHome.name}"`);
     } catch (error) {
@@ -52,14 +59,18 @@ const SettingHomeScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <HeaderHomeInfo name={homeName} rooms={3} members={2} />
+      <HeaderHomeInfo name={homeName} rooms={roomsInThisHome.length} members={2} />
 
       <SettingHomeOptionRow
         label="Tên"
         value={homeName}
         onPress={() => setShowRenameModal(true)}
       />
-      <SettingHomeOptionRow label="Quản lý phòng" value="3" onPress={() => {}} />
+      <SettingHomeOptionRow
+        label="Quản lý phòng"
+        value={`${roomsInThisHome.length}`} // ✅ hiển thị số phòng
+        onPress={() => navigation.navigate('ManageRoom', { homeId: id })}
+      />
       <SettingHomeOptionRow label="Thiết bị" value="12" onPress={() => {}} />
 
       <DeleteHomeButton id={id} name={homeName} />

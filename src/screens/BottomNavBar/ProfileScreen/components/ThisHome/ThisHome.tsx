@@ -1,31 +1,22 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 type Props = {
-  onPress: (house: { id: string; name: string }) => void;
+  name: string;
+  rooms: number;
+  members: number;
+  onPress: () => void;
 };
 
-const ThisHome: React.FC<Props> = ({ onPress }) => {
-  const house = {
-    id: '1',
-    name: 'Nhà của tôi',
-  };
-
-  const handlePress = () => {
-    onPress(house);
-  };
-
+const ThisHome: React.FC<Props> = ({ name, rooms, members, onPress }) => {
   return (
-    <TouchableOpacity style={styles.container} onPress={handlePress}>
+    <TouchableOpacity style={styles.container} onPress={onPress}>
       <View style={styles.textContainer}>
-        <Text style={styles.title}>{house.name}</Text>
-        <Text style={styles.subtitle}>3 Phòng | 1 thành viên</Text>
+        <Text style={styles.title}>{name}</Text>
+        <Text style={styles.subtitle}>
+          {rooms} Phòng | {members} thành viên
+        </Text>
       </View>
       <Icon name="chevron-right" size={24} color="#888" />
     </TouchableOpacity>

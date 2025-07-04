@@ -1,28 +1,35 @@
 import React from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import UserCard from './components/UserCard/UserCard';
-import ThisHome from './components/ThisHome/ThisHome';
-import DashboardWidgets from './components/DashboardWidgets/DashboardWidgets';  
+import { ScrollView, StyleSheet, View, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import useUserStore from '../../../store/useUserStore';
 
+import UserCard from './components/UserCard/UserCard';
+import ThisHome from './components/ThisHome/ThisHome';
+import DashboardWidgets from './components/DashboardWidgets/DashboardWidgets';
+
+import useUserStore from '../../../store/useUserStore';
+import useHomeStore from '../../../store/useHomeStore';
 import { RootStackParamList } from '../../../navigation/RootNavigator';
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  // Lấy user từ store hoặc context
-  const user = useUserStore(state => state.user);
+  // Lấy user từ store
+  const user = useUserStore((state) => state.user);
+
+  // Lấy selectedHome từ store
+  const selectedHome = useHomeStore((state) => state.selectedHome());
 
   const handlePressUserCard = () => {
     navigation.navigate('UserProfile');
   };
 
-  const handlePressThisHome = (house: { id: string; name: string }) => {
-    navigation.navigate('HouseOverview', {
-      id: house.id,
-      name: house.name,
+  const handlePressThisHome = () => {
+    if (!selectedHome) return;
+
+    navigation.navigate('SettingHome', {
+      id: selectedHome._id,
+      name: selectedHome.name,
     });
   };
 
@@ -32,16 +39,33 @@ const ProfileScreen: React.FC = () => {
   };
 
   if (!user) {
-    // Có thể hiển thị loading hoặc message
-    return null;
+    return (
+      <View style={styles.centered}>
+        <Text>Loading user...</Text>
+      </View>
+    );
+  }
+
+  if (!selectedHome) {
+    return (
+      <View style={styles.centered}>
+        <Text>No Home Selected</Text>
+      </View>
+    );
   }
 
   return (
     <ScrollView style={styles.container}>
       <UserCard user={user} onPress={handlePressUserCard} />
-      <ThisHome onPress={handlePressThisHome} />
+
+      <ThisHome
+        name={selectedHome.name}
+        rooms={3}
+        members={1}
+        onPress={handlePressThisHome}
+      />
+
       <DashboardWidgets onPressItem={handlePressDashboardItem} />
-      {/* Thêm các phần khác nếu cần */}
     </ScrollView>
   );
 };
@@ -53,5 +77,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     paddingTop: 12,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

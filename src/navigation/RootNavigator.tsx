@@ -5,11 +5,14 @@ import useUserStore from '../store/useUserStore'; // ✅ import Zustand store
 import LoginScreen from '../screens/LoginScreen/LoginScreen';
 import HomeScreen from '../screens/HomeScreen/HomeScreen';
 import ManageHousesScreen from '../screens/ManageHousesScreen/ManageHousesScreen/ManageHousesScreen';
-import HouseOverviewScreen from '../screens/ManageHousesScreen/SettingHomeScreen/SettingHomeScreen';
+import SettingHomeScreen from '../screens/ManageHousesScreen/SettingHomeScreen/SettingHomeScreen';
 import NotificationsScreen from '../screens/NotificationsScreen/NotificationsScreen';
 import AddDeviceScreen from '../screens/AddDeviceScreen/AddDeviceScreen';
 import AddAutomation from '../screens/AddAutomationScreen/AddAutomationScreen';
 import UserProfile from '../screens/User/UserProfileScreen';
+
+import ManageRoom from '../screens/Rooms/ManageRoomScreen/ManageRoomScreen';
+import SettingRoom from '../screens/Rooms/SettingRoomScreen/SettingRoomScreen';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -21,6 +24,8 @@ export type RootStackParamList = {
   AddDevice: undefined;
   AddAutomation: undefined;
   UserProfile: undefined;
+  ManageRoom: { homeId: string };
+  SettingRoom: { roomId: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -34,7 +39,7 @@ const RootNavigator = () => {
         <>
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="ManageHouses" component={ManageHousesScreen} options={{ headerShown: true }} />
-          <Stack.Screen name="SettingHome" component={HouseOverviewScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="SettingHome" component={SettingHomeScreen} options={{ headerShown: true }} />
           <Stack.Screen
             name="Notifications"
             component={NotificationsScreen}
@@ -43,6 +48,8 @@ const RootNavigator = () => {
           <Stack.Screen name="AddDevice" component={AddDeviceScreen} options={{ headerShown: true }} />
           <Stack.Screen name="AddAutomation" component={AddAutomation} options={{ headerShown: true }} />
           <Stack.Screen name="UserProfile" component={UserProfile} options={{ headerShown: true }} />
+          <Stack.Screen name="ManageRoom" component={ManageRoom} options={{ headerShown: true }} />
+          <Stack.Screen name="SettingRoom" component={SettingRoom} options={{ headerShown: true }} />
         </>
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} />

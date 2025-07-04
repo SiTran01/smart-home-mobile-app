@@ -1,16 +1,18 @@
-import React, { useEffect, useState } from 'react'; 
+import React, { use, useEffect, useState } from 'react'; 
 import { View, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 
 import RootNavigator from './navigation/RootNavigator';
 import useUserStore from './store/useUserStore';
-import { fetchUserInfo } from './services/userApi/authApi';
-import useLoadHomes from './hooks/home/useLoadHomes';
+import { fetchUserInfo } from './services/api/authApi';
+import useLoadHomes from './hooks/useLoadHomes';
+import useLoadRooms from './hooks/useLoadRooms';
 
 const Main = () => {
   
   useLoadHomes(); // ✅ load homes ngay khi app chạy
+  useLoadRooms(); // ✅ load rooms ngay khi app chạy
 
   const { setUser } = useUserStore();
   const [isLoading, setIsLoading] = useState(true);
