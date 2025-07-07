@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -6,45 +6,75 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import useRoomStore from '../../../store/useRoomStore';
+import useHomeStore from '../../../store/useHomeStore';
 import { RootStackParamList } from '../../../navigation/RootNavigator';
+
 import RoomCard from './components/RoomCard';
 import CreateNewRoomModal from './components/CreateNewRoomModal';
-import { createRoom } from '../../../services/api/roomApi';
+import { createRoom, getAllRooms } from '../../../services/api/roomApi'; // ✅ import getAllRooms
+import { getAllHomes } from '../../../services/api/homeApi';
 
 const ManageRoomScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute();
   const { homeId } = route.params as { homeId: string };
 
-  const { rooms, addRoom } = useRoomStore();
-
-  const filteredRooms = rooms.filter(room => room.home === homeId);
+  const { rooms, setRooms, addRoom } = useRoomStore(); // ✅ destructure setRooms từ store
+  const { setHomes } = useHomeStore();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Handle add room
-  const handleAddRoom = async (roomName: string) => {
+  // ✅ Load all rooms on mount
+  useEffect(() => {
+  const fetchRooms = async () => {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem('token');
-
       if (!token) {
         Alert.alert('Lỗi', 'Bạn chưa đăng nhập');
         return;
       }
 
-      const newRoom = await createRoom(token, { name: roomName, homeId: homeId });
-      addRoom(newRoom);
+      const roomsData = await getAllRooms(token, homeId);
+      setRooms(roomsData); // ✅ update store với rooms của homeId này
     } catch (error) {
-      console.error('Error creating room:', error);
+      console.error('❌ Error fetching rooms:', error);
+      Alert.alert('Lỗi', 'Không thể tải danh sách phòng');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchRooms();
+}, [homeId]);
+
+  // ✅ Filter rooms của đúng homeId truyền vào
+  const filteredRooms = rooms.filter(room => room.home === homeId);
+
+  const handleAddRoom = async (roomName: string) => {
+    setLoading(true);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        Alert.alert('Lỗi', 'Bạn chưa đăng nhập');
+        return;
+      }
+
+      const newRoom = await createRoom(token, { name: roomName, homeId });
+      addRoom(newRoom);
+
+      // ✅ Call getAllHomes và update toàn bộ store
+      const allHomes = await getAllHomes(token);
+      setHomes(allHomes);
+    } catch (error) {
+      console.error('❌ Error creating room:', error);
       Alert.alert('Lỗi', 'Không thể tạo phòng mới');
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Setup headerRight
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (

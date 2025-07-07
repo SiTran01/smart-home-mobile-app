@@ -2,17 +2,17 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import useUserStore from '../store/useUserStore'; // ✅ import Zustand store
 
-import LoginScreen from '../screens/LoginScreen/LoginScreen';
-import HomeScreen from '../screens/HomeScreen/HomeScreen';
-import ManageHousesScreen from '../screens/ManageHousesScreen/ManageHousesScreen/ManageHousesScreen';
-import SettingHomeScreen from '../screens/ManageHousesScreen/SettingHomeScreen/SettingHomeScreen';
+import LoginScreen from '../screens/Auth/LoginScreen/LoginScreen';
+import HomeScreen from '../screens/HomeScreen';
+import ManageHousesScreen from '../screens/House/ManageHousesScreen/ManageHousesScreen';
+import SettingHomeScreen from '../screens/House/SettingHomeScreen/SettingHomeScreen';
 import NotificationsScreen from '../screens/NotificationsScreen/NotificationsScreen';
-import AddDeviceScreen from '../screens/AddDeviceScreen/AddDeviceScreen';
+import AddDeviceScreen from '../screens/Device/AddDeviceScreen';
 import AddAutomation from '../screens/AddAutomationScreen/AddAutomationScreen';
 import UserProfile from '../screens/User/UserProfileScreen';
 
-import ManageRoom from '../screens/Rooms/ManageRoomScreen/ManageRoomScreen';
-import SettingRoom from '../screens/Rooms/SettingRoomScreen/SettingRoomScreen';
+import ManageRoom from '../screens/Room/ManageRoomScreen/ManageRoomScreen';
+import SettingRoom from '../screens/Room/SettingRoomScreen/SettingRoomScreen';
 
 export type RootStackParamList = {
   Login: undefined;

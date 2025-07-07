@@ -1,26 +1,28 @@
 import React, { useLayoutEffect, useCallback, useEffect } from 'react';
-import { ScrollView, Text } from 'react-native';
+import { ScrollView, Text, StyleSheet } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 
-import TopBar from './components/TopBar/MiHomeHeader';
-import HouseDropdownModal from './components/TopBar/components/HouseDropdownModal';
-import PlusMenuModal from './components/TopBar/components/PlusMenuModal';
+import MiHomeHeader from './components/Header/MiHomeHeader';
+import HouseDropdownModal from './components/Header/components/HouseDropdownModal';
+import PlusMenuModal from './components/Header/components/PlusMenuModal';
 
 import useHomeStore from '../../../store/useHomeStore';
+import useDeviceStore from '../../../store/useDeviceStore';
 import { Home } from '../../../services/api/homeApi';
+import MiHomeBody from './components/Body/MiHomeBody';
 
 const MiHomeScreen = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
 
   const { homes, selectedHomeId, setSelectedHomeId } = useHomeStore();
+  const { devices } = useDeviceStore();
 
   const selectedHouse = homes.find(h => h._id === selectedHomeId) || null;
 
   const [showDropdown, setShowDropdown] = React.useState(false);
   const [showPlusMenu, setShowPlusMenu] = React.useState(false);
 
-  // ✅ Khi homes thay đổi ➔ đảm bảo selectedHomeId hợp lệ
   useEffect(() => {
     if (homes.length === 0) {
       setSelectedHomeId(null);
@@ -29,8 +31,9 @@ const MiHomeScreen = () => {
     }
   }, [homes, selectedHouse, setSelectedHomeId]);
 
+  //header------------
   const renderHeader = useCallback(() => (
-    <TopBar
+    <MiHomeHeader
       selectedHouseName={selectedHouse?.name || 'Chọn nhà'}
       onHousePress={() => setShowDropdown(true)}
       onOpenNotifications={() => navigation.navigate('Notifications')}
@@ -49,10 +52,16 @@ const MiHomeScreen = () => {
     setShowDropdown(false);
   };
 
+  const filteredDevices = devices.filter(device => device.home === selectedHomeId);
+
   return (
     <>
-      <ScrollView>
-        <Text>Thiết bị trong Tất cả - Nhà ID: {selectedHouse?._id}</Text>
+      <ScrollView style={styles.container}>
+        <Text style={styles.sectionTitle}>Thiết bị trong Tất cả - Nhà ID: {selectedHouse?._id}</Text>
+
+        <MiHomeBody devices={filteredDevices} />
+
+        <Text style={styles.sectionTitle}>Danh sách Home</Text>
         {homes.map((home, index) => (
           <Text key={home._id || index}>
             Nhà {index + 1} - {home.name}
@@ -98,3 +107,15 @@ const MiHomeScreen = () => {
 };
 
 export default MiHomeScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+  },
+  sectionTitle: {
+    marginTop: 16,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});

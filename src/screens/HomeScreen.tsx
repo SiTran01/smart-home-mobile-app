@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import BottomTabNavigator from '../../navigation/BottomTabNavigator';
+import BottomTabNavigator from '../navigation/BottomTabNavigator';
 
 const HomeScreen = () => {
   return (

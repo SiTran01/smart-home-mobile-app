@@ -5,8 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import InputField from './components/InputField';
 import GoogleLoginButton from './components/GoogleLoginButton';
-import useUserStore from '../../store/useUserStore';
-import { loginUser, loginGoogleUser } from '../../services/api/authApi';
+import useUserStore from '../../../store/useUserStore';
+import { loginUser, loginGoogleUser } from '../../../services/api/authApi';
 
 const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');

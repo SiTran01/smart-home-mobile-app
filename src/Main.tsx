@@ -8,11 +8,13 @@ import useUserStore from './store/useUserStore';
 import { fetchUserInfo } from './services/api/authApi';
 import useLoadHomes from './hooks/useLoadHomes';
 import useLoadRooms from './hooks/useLoadRooms';
+import useLoadDevices from './hooks/useLoadDevices';
 
 const Main = () => {
   
   useLoadHomes(); // ✅ load homes ngay khi app chạy
   useLoadRooms(); // ✅ load rooms ngay khi app chạy
+  useLoadDevices(); // ✅ load rooms ngay khi app chạy
 
   const { setUser } = useUserStore();
   const [isLoading, setIsLoading] = useState(true);

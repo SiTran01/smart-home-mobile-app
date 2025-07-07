@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAllHomes } from '../services/api/homeApi';
-import useHomeStore from '../store/useHomeStore';
+import useHomeStore from '../store/useHomeStore'; // ✅ import home store để set homes  
 import useUserStore from '../store/useUserStore'; // ✅ import user store
 
 const useLoadHomes = () => {
