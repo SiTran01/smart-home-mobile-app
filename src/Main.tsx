@@ -1,4 +1,5 @@
-import React, { use, useEffect, useState } from 'react'; 
+// Main.tsx
+import React, { useEffect, useState } from 'react'; 
 import { View, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
@@ -7,18 +8,10 @@ import RootNavigator from './navigation/RootNavigator';
 import useUserStore from './store/useUserStore';
 import { fetchUserInfo } from './services/api/authApi';
 import useLoadHomes from './hooks/useLoadHomes';
-import useLoadRooms from './hooks/useLoadRooms';
-import useLoadDevices from './hooks/useLoadDevices';
 
 const Main = () => {
-  
-  useLoadHomes(); // ✅ load homes ngay khi app chạy
-  useLoadRooms(); // ✅ load rooms ngay khi app chạy
-  useLoadDevices(); // ✅ load rooms ngay khi app chạy
-
   const { setUser } = useUserStore();
   const [isLoading, setIsLoading] = useState(true);
-  
 
   useEffect(() => {
     const loadUser = async () => {
@@ -28,7 +21,6 @@ const Main = () => {
 
         if (token) {
           const user = await fetchUserInfo(token);
-
           if (user) {
             setUser(user);
             console.log('[Main] Loaded user:', user);
@@ -49,6 +41,8 @@ const Main = () => {
 
     loadUser();
   }, [setUser]);
+
+  useLoadHomes(); // Load homes khi user đã có (fix logic theo project bạn)
 
   if (isLoading) {
     return (

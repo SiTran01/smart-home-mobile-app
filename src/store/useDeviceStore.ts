@@ -8,6 +8,7 @@ interface DeviceStore {
   addDevice: (device: Device) => void;
   updateDevice: (device: Device) => void;
   deleteDevice: (deviceId: string) => void;
+  resetStore: () => void; // 🔥 thêm dòng này
 }
 
 const useDeviceStore = create<DeviceStore>((set) => ({
@@ -29,6 +30,8 @@ const useDeviceStore = create<DeviceStore>((set) => ({
     set((state) => ({
       devices: state.devices.filter((d) => d._id !== deviceId),
     })),
+
+    resetStore: () => set({ devices: [] }), // ✅ reset devices về mảng rỗng
 }));
 
 export default useDeviceStore;

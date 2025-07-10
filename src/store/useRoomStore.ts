@@ -13,6 +13,7 @@ interface RoomStore {
   setSelectedRoomId: (roomId: string | null) => void;
 
   selectedRoom: () => Room | null; // selector tiện dụng
+  resetStore: () => void; // 🔥 thêm dòng này
 }
 
 const useRoomStore = create<RoomStore>((set, get) => ({
@@ -62,6 +63,8 @@ const useRoomStore = create<RoomStore>((set, get) => ({
     const { rooms, selectedRoomId } = get();
     return rooms.find((r) => r._id === selectedRoomId) || null;
   },
+
+  resetStore: () => set({ rooms: [], selectedRoomId: null }),
 }));
 
 export default useRoomStore;

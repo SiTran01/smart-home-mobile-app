@@ -11,7 +11,7 @@ import { RootStackParamList } from '../../../navigation/RootNavigator';
 
 import RoomCard from './components/RoomCard';
 import CreateNewRoomModal from './components/CreateNewRoomModal';
-import { createRoom, getAllRooms } from '../../../services/api/roomApi'; // ✅ import getAllRooms
+import { createRoom, getAllRooms } from '../../../services/api/roomApi';
 import { getAllHomes } from '../../../services/api/homeApi';
 
 const ManageRoomScreen: React.FC = () => {
@@ -19,7 +19,7 @@ const ManageRoomScreen: React.FC = () => {
   const route = useRoute();
   const { homeId } = route.params as { homeId: string };
 
-  const { rooms, setRooms, addRoom } = useRoomStore(); // ✅ destructure setRooms từ store
+  const { rooms, setRooms, addRoom } = useRoomStore();
   const { setHomes } = useHomeStore();
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -27,27 +27,28 @@ const ManageRoomScreen: React.FC = () => {
 
   // ✅ Load all rooms on mount
   useEffect(() => {
-  const fetchRooms = async () => {
-    setLoading(true);
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        Alert.alert('Lỗi', 'Bạn chưa đăng nhập');
-        return;
+    const fetchRooms = async () => {
+      setLoading(true);
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (!token) {
+          Alert.alert('Lỗi', 'Bạn chưa đăng nhập');
+          return;
+        }
+
+        const roomsData = await getAllRooms(token, homeId);
+        console.log('[ManageRoomScreen] getAllRooms response:', roomsData); // ✅ log response
+        setRooms(roomsData);
+      } catch (error) {
+        console.error('❌ Error fetching rooms:', error);
+        Alert.alert('Lỗi', 'Không thể tải danh sách phòng');
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const roomsData = await getAllRooms(token, homeId);
-      setRooms(roomsData); // ✅ update store với rooms của homeId này
-    } catch (error) {
-      console.error('❌ Error fetching rooms:', error);
-      Alert.alert('Lỗi', 'Không thể tải danh sách phòng');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchRooms();
-}, [homeId]);
+    fetchRooms();
+  }, [homeId]);
 
   // ✅ Filter rooms của đúng homeId truyền vào
   const filteredRooms = rooms.filter(room => room.home === homeId);
@@ -62,10 +63,11 @@ const ManageRoomScreen: React.FC = () => {
       }
 
       const newRoom = await createRoom(token, { name: roomName, homeId });
+      console.log('[ManageRoomScreen] createRoom response:', newRoom); // ✅ log response
       addRoom(newRoom);
 
-      // ✅ Call getAllHomes và update toàn bộ store
       const allHomes = await getAllHomes(token);
+      console.log('[ManageRoomScreen] getAllHomes response:', allHomes); // ✅ log response
       setHomes(allHomes);
     } catch (error) {
       console.error('❌ Error creating room:', error);

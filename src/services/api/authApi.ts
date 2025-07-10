@@ -11,7 +11,7 @@ export interface User {
 
 // ✅ Hàm login user
 export const loginUser = async (email: string, password: string): Promise<User> => {
-  const response = await api.post<User>('/login', { email, password });
+  const response = await api.post<User>('/auth/login', { email, password });
   return response.data;
 };
 
@@ -24,6 +24,14 @@ export const fetchUserInfo = async (token: string): Promise<User> => {
   });
   return response.data;
 };
+
+export const fetchUserById = async (token: string, userId: string): Promise<User> => {
+  const response = await api.get<User>(`/auth/user/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
 
 // ✅ Hàm login Google user
 export const loginGoogleUser = async (idToken: string): Promise<User> => {

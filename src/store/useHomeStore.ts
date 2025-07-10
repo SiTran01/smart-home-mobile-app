@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Home } from '../services/api/homeApi';
 
 interface HomeStore {
@@ -13,6 +14,7 @@ interface HomeStore {
   setSelectedHomeId: (homeId: string | null) => void;
 
   selectedHome: () => Home | null; // selector tiện dụng
+  resetStore: () => void; // 🔥 thêm dòng này
 }
 
 const useHomeStore = create<HomeStore>((set, get) => ({
@@ -20,24 +22,30 @@ const useHomeStore = create<HomeStore>((set, get) => ({
   selectedHomeId: null,
 
   setHomes: (homes) => {
-    set((state) => ({
-      homes,
-      // Nếu không có selectedHomeId hoặc selectedHomeId không tồn tại trong list mới ➔ set về home đầu tiên
-      selectedHomeId:
-        !state.selectedHomeId || !homes.find((h) => h._id === state.selectedHomeId)
-          ? homes.length > 0
-            ? homes[0]._id
-            : null
-          : state.selectedHomeId,
-    }));
-  },
+  set((state) => ({
+    homes,
+    selectedHomeId:
+      state.selectedHomeId && homes.find(h => h._id === state.selectedHomeId)
+        ? state.selectedHomeId
+        : homes.length > 0
+          ? homes[0]._id
+          : null,
+  }));
+},
+
 
   addHome: (home) =>
-    set((state) => ({
-      homes: [...state.homes, home],
-      // Nếu chưa có home nào được chọn ➔ set home mới này làm selected
-      selectedHomeId: state.selectedHomeId || home._id,
-    })),
+    set((state) => {
+      const newSelectedHomeId = state.selectedHomeId || home._id;
+
+      // ✅ lưu vào AsyncStorage
+      AsyncStorage.setItem('selectedHomeId', newSelectedHomeId);
+
+      return {
+        homes: [...state.homes, home],
+        selectedHomeId: newSelectedHomeId,
+      };
+    }),
 
   updateHome: (updatedHome) =>
     set((state) => ({
@@ -47,23 +55,47 @@ const useHomeStore = create<HomeStore>((set, get) => ({
   deleteHome: (homeId) =>
     set((state) => {
       const newHomes = state.homes.filter((h) => h._id !== homeId);
+      const newSelectedHomeId =
+        state.selectedHomeId === homeId
+          ? newHomes.length > 0
+            ? newHomes[0]._id
+            : null
+          : state.selectedHomeId;
+
+      // ✅ cập nhật AsyncStorage
+      if (newSelectedHomeId) {
+        AsyncStorage.setItem('selectedHomeId', newSelectedHomeId);
+      } else {
+        AsyncStorage.removeItem('selectedHomeId');
+      }
+
       return {
         homes: newHomes,
-        selectedHomeId:
-          state.selectedHomeId === homeId
-            ? newHomes.length > 0
-              ? newHomes[0]._id
-              : null
-            : state.selectedHomeId,
+        selectedHomeId: newSelectedHomeId,
       };
     }),
 
-  setSelectedHomeId: (homeId) => set({ selectedHomeId: homeId }),
+  setSelectedHomeId: (homeId) => {
+  set({ selectedHomeId: homeId });
+  if (homeId) {
+    AsyncStorage.setItem('selectedHomeId', homeId);
+  } else {
+    AsyncStorage.removeItem('selectedHomeId');
+  }
+},
 
   selectedHome: () => {
     const { homes, selectedHomeId } = get();
     return homes.find((h) => h._id === selectedHomeId) || null;
   },
+
+  resetStore: () => {
+  set({ homes: [], selectedHomeId: null });
+  AsyncStorage.removeItem('selectedHomeId');
+},
+
+
 }));
+
 
 export default useHomeStore;

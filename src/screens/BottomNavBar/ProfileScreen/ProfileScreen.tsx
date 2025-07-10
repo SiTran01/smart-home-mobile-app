@@ -61,7 +61,7 @@ const ProfileScreen: React.FC = () => {
       <ThisHome
         name={selectedHome.name}
         rooms={selectedHome.rooms.length}
-        members={selectedHome.members.length + 1}
+        members={selectedHome.members.length + 1} // +1 for owner
         onPress={handlePressThisHome}
       />
 

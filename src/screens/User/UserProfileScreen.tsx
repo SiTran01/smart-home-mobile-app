@@ -1,29 +1,47 @@
 import React from 'react';
 import { ScrollView, TouchableOpacity, Text, Alert, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import useUserStore from '../../store/useUserStore';
+
+import { resetAllStores } from '../../store/resetAllStores'; // 🆕 import hàm reset
+
 import AvatarRow from './components/AvatarRow';
 import NameRow from './components/NameRow';
 import EmailRow from './components/EmailRow';
 import TwitterRow from './components/TwitterRow';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+
 
 const UserProfileScreen: React.FC = () => {
   const user = useUserStore(state => state.user);
   const setUser = useUserStore(state => state.setUser);
 
   const handleLogout = async () => {
-    Alert.alert('Đăng xuất', 'Bạn có chắc muốn đăng xuất?', [
-      { text: 'Hủy', style: 'cancel' },
-      {
-        text: 'Đăng xuất',
-        style: 'destructive',
-        onPress: async () => {
+  Alert.alert('Đăng xuất', 'Bạn có chắc muốn đăng xuất?', [
+    { text: 'Hủy', style: 'cancel' },
+    {
+      text: 'Đăng xuất',
+      style: 'destructive',
+      onPress: async () => {
+        try {
+          await GoogleSignin.configure({
+            webClientId: '1078806341508-9kmi0bvogdtv7g8uokpm4bv9bmpdusck.apps.googleusercontent.com',
+            offlineAccess: true,
+          });
+          await GoogleSignin.signOut(); // ✅ clear Google account cache
           await AsyncStorage.removeItem('token');
           setUser(null);
-        },
+
+          resetAllStores(); // 🔥 reset toàn bộ stores về initial state
+          
+        } catch (error) {
+          console.error('❌ Logout error:', error);
+        }
       },
-    ]);
-  };
+    },
+  ]);
+};
 
   if (!user) {
     return (

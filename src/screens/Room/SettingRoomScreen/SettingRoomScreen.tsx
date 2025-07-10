@@ -6,10 +6,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { RootStackParamList } from '../../../navigation/RootNavigator';
 import useRoomStore from '../../../store/useRoomStore';
+import useHomeStore from '../../../store/useHomeStore';
 import SettingOptionRow from './components/SettingOptionRow';
 import RenameRoomModal from './components/RenameRoomModal';
 import DeleteRoomButton from './components/DeleteRoomButton';
 import { updateRoom as updateRoomApi, deleteRoom as deleteRoomApi } from '../../../services/api/roomApi';
+import { getAllHomes } from '../../../services/api/homeApi';
 
 type SettingRoomRouteProp = RouteProp<RootStackParamList, 'SettingRoom'>;
 
@@ -19,6 +21,7 @@ const SettingRoomScreen: React.FC = () => {
   const { roomId } = route.params;
 
   const { rooms, updateRoom, deleteRoom } = useRoomStore();
+  const { setHomes } = useHomeStore();
   const room = rooms.find(r => r._id === roomId);
 
   const [renameModalVisible, setRenameModalVisible] = useState(false);
@@ -34,6 +37,7 @@ const SettingRoomScreen: React.FC = () => {
       }
 
       const updatedRoom = await updateRoomApi(token, room._id, { name: newName });
+      console.log('[SettingRoomScreen] updateRoomApi response:', updatedRoom);
       updateRoom(updatedRoom);
     } catch (error) {
       console.error('Error updating room name:', error);
@@ -54,7 +58,14 @@ const SettingRoomScreen: React.FC = () => {
       }
 
       await deleteRoomApi(token, room._id);
+      console.log('[SettingRoomScreen] deleted room id:', room._id);
       deleteRoom(room._id); // xóa khỏi store
+
+      // ✅ Reload all homes after deleting room
+      const allHomes = await getAllHomes(token);
+      console.log('[SettingRoomScreen] getAllHomes response after delete:', allHomes);
+      setHomes(allHomes);
+
       Alert.alert('Thành công', `Đã xóa phòng "${room.name}"`);
       navigation.goBack();
     } catch (error) {
