@@ -11,7 +11,7 @@ import RenameHomeModal from './components/RenameHomeModal';
 import MembersList, { Member } from './components/MembersList';
 
 import { updateHome } from '../../../services/api/homeApi';
-import { fetchUserById } from '../../../services/api/authApi'; // 🆕 tạo hàm này
+import { fetchUserById } from '../../../services/api/authApi';
 import useHomeStore from '../../../store/useHomeStore';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -25,7 +25,7 @@ const SettingHomeScreen: React.FC = () => {
 
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [homeName, setHomeName] = useState(name);
-  const [memberList, setMemberList] = useState<Member[]>([]); // 🆕
+  const [memberList, setMemberList] = useState<Member[]>([]);
 
   const { homes, updateHome: updateHomeInStore } = useHomeStore();
   const currentHome = homes.find(home => home._id === id);
@@ -34,51 +34,41 @@ const SettingHomeScreen: React.FC = () => {
   const devicesCount = currentHome?.devices?.length ?? 0;
   const membersCount = (currentHome?.members?.length ?? 0) + 1;
 
-  // 🆕 useEffect load members info
   useEffect(() => {
-  const loadMembers = async () => {
-    if (!currentHome) return;
+    const loadMembers = async () => {
+      if (!currentHome) return;
 
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) return;
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (!token) return;
 
-      // 1. Fetch owner info
-      console.log('🔎 Fetching owner info:', currentHome.owner);
-      const ownerRes = await fetchUserById(token, currentHome.owner);
-      const owner: Member = {
-        _id: ownerRes._id,
-        name: ownerRes.name,
-        role: 'owner',
-        avatarUrl: ownerRes.picture,
-      };
+        const ownerRes = await fetchUserById(token, currentHome.owner!);
+        const owner: Member = {
+          _id: ownerRes._id,
+          name: ownerRes.name,
+          role: 'owner',
+          avatarUrl: ownerRes.picture,
+        };
 
-      // 2. Fetch each member info
-      const memberPromises = currentHome.members.map(async (m) => {
-        console.log('🔎 Fetching member user:', m.user, 'with role:', m.role);
-        const userRes = await fetchUserById(token, m.user);
-        return {
-          _id: userRes._id,
-          name: userRes.name,
-          role: m.role,
-          avatarUrl: userRes.picture,
-        } as Member;
-      });
+        const memberPromises = (currentHome.members || []).map(async (m) => {
+          const userRes = await fetchUserById(token, m.user);
+          return {
+            _id: userRes._id,
+            name: userRes.name,
+            role: m.role,
+            avatarUrl: userRes.picture,
+          } as Member;
+        });
 
-      const members = await Promise.all(memberPromises);
+        const members = await Promise.all(memberPromises);
+        setMemberList([owner, ...members]);
+      } catch (err) {
+        console.error('❌ Error fetching members:', err);
+      }
+    };
 
-      console.log('✅ Finished fetching all members:', [owner, ...members]);
-
-      // 3. Set to state
-      setMemberList([owner, ...members]);
-    } catch (err) {
-      console.error('❌ Error fetching members:', err);
-    }
-  };
-
-  loadMembers();
-}, [currentHome]);
-
+    loadMembers();
+  }, [currentHome]);
 
   const handleRename = async (newName: string) => {
     if (!newName || newName === homeName) {
@@ -104,6 +94,10 @@ const SettingHomeScreen: React.FC = () => {
     } finally {
       setShowRenameModal(false);
     }
+  };
+
+  const handleInviteMember = () => {
+    navigation.navigate('InviteMember', { homeId: id });
   };
 
   return (
@@ -141,7 +135,8 @@ const SettingHomeScreen: React.FC = () => {
 
       <MembersList
         members={memberList}
-        currentUserId="1" // thay id người login thật
+        currentUserId="1" // TODO: thay id người login thật
+        onInvitePress={handleInviteMember} // 🆕 pass navigate callback
       />
 
       <DeleteHomeButton id={id} name={homeName} />

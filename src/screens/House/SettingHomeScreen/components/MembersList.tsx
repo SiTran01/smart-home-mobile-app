@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 
-// ✅ Export Member type để file khác có thể import
 export interface Member {
   _id: string;
   name: string;
@@ -12,10 +11,10 @@ export interface Member {
 interface Props {
   members: Member[];
   currentUserId: string;
+  onInvitePress?: () => void; // 🆕 thêm prop callback
 }
 
-const MembersList: React.FC<Props> = ({ members, currentUserId }) => {
-  // 🔥 Sort owner -> admin -> member
+const MembersList: React.FC<Props> = ({ members, currentUserId, onInvitePress }) => {
   const sortedMembers = [...members].sort((a, b) => {
     const rolePriority = { owner: 0, admin: 1, member: 2 };
     return rolePriority[a.role] - rolePriority[b.role];
@@ -52,6 +51,14 @@ const MembersList: React.FC<Props> = ({ members, currentUserId }) => {
           </View>
         );
       })}
+
+      {/* ➕ Mời thành viên mới */}
+      <TouchableOpacity style={styles.inviteRow} onPress={onInvitePress}>
+        <View style={styles.plusCircle}>
+          <Text style={styles.plusText}>+</Text>
+        </View>
+        <Text style={styles.inviteText}>Mời thành viên mới</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -91,5 +98,30 @@ const styles = StyleSheet.create({
   role: {
     fontSize: 14,
     color: '#777',
+  },
+  inviteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  plusCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#777',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  plusText: {
+    fontSize: 18,
+    color: '#777',
+    lineHeight: 20,
+  },
+  inviteText: {
+    fontSize: 16,
+    color: '#777',
+    fontWeight: '500',
   },
 });

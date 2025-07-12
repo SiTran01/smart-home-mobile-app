@@ -2,9 +2,9 @@ import React from 'react';
 import { ScrollView, TouchableOpacity, Text, Alert, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import useUserStore from '../../store/useUserStore';
+import useUserStore from '../../../store/useUserStore';
 
-import { resetAllStores } from '../../store/resetAllStores'; // 🆕 import hàm reset
+import { resetAllStores } from '../../../store/resetAllStores'; // 🆕 import hàm reset
 
 import AvatarRow from './components/AvatarRow';
 import NameRow from './components/NameRow';

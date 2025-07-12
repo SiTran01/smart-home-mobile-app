@@ -9,10 +9,11 @@ import SettingHomeScreen from '../screens/House/SettingHomeScreen/SettingHomeScr
 import NotificationsScreen from '../screens/NotificationsScreen/NotificationsScreen';
 import AddDeviceScreen from '../screens/Device/AddDeviceScreen';
 import AddAutomation from '../screens/AddAutomationScreen/AddAutomationScreen';
-import UserProfile from '../screens/User/UserProfileScreen';
+import UserProfile from '../screens/User/UserProfile/UserProfileScreen';
 
 import ManageRoom from '../screens/Room/ManageRoomScreen/ManageRoomScreen';
 import SettingRoom from '../screens/Room/SettingRoomScreen/SettingRoomScreen';
+import InviteMember from '../screens/User/InviteMember/InviteMemberScreen'; // ✅ import InviteMember screen
 
 export type RootStackParamList = {
   Login: undefined;
@@ -26,6 +27,7 @@ export type RootStackParamList = {
   UserProfile: undefined;
   ManageRoom: { homeId: string };
   SettingRoom: { roomId: string };
+  InviteMember: { homeId: string }; // ✅ thêm route cho InviteMember
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -50,6 +52,7 @@ const RootNavigator = () => {
           <Stack.Screen name="UserProfile" component={UserProfile} options={{ headerShown: true }} />
           <Stack.Screen name="ManageRoom" component={ManageRoom} options={{ headerShown: true }} />
           <Stack.Screen name="SettingRoom" component={SettingRoom} options={{ headerShown: true }} />
+          <Stack.Screen name="InviteMember" component={InviteMember} options={{ headerShown: true }} />
         </>
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} />
