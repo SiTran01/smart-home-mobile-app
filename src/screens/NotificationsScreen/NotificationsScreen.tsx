@@ -8,29 +8,46 @@ import AlarmNotificationItem from './components/AlarmNotificationItem';
 import InvitationNotificationItem from './components/InvitationNotificationItem';
 
 import { getAllNotifications, Notification } from '../../services/api/notificationApi';
+import socket from '../../services/socket/socket';
 
 const NotificationsScreen: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  // ✅ Load notifications từ API khi mount
   useEffect(() => {
     const fetchNotifications = async () => {
-      const token = await AsyncStorage.getItem('token');
-      console.log('🔑 [NotificationsScreen] Token:', token);
+      try {
+        const token = await AsyncStorage.getItem('token');
+        console.log('🔑 [NotificationsScreen] Token:', token);
 
-      if (token) {
-        try {
-          const data = await getAllNotifications(token);
-          console.log('📦 [NotificationsScreen] Notifications data:', data);
-          setNotifications(data);
-        } catch (error) {
-          console.error('❌ [NotificationsScreen] Failed to fetch notifications:', error);
+        if (!token) {
+          console.warn('⚠️ [NotificationsScreen] No access token found');
+          return;
         }
-      } else {
-        console.warn('⚠️ [NotificationsScreen] No access token found');
+
+        const data = await getAllNotifications(token);
+        console.log('📦 [NotificationsScreen] Notifications data:', data);
+        setNotifications(data);
+      } catch (error) {
+        console.error('❌ [NotificationsScreen] Failed to fetch notifications:', error);
       }
     };
 
     fetchNotifications();
+  }, []);
+
+  // ✅ Listen socket newNotification realtime
+  useEffect(() => {
+    const handleNewNotification = (data: Notification) => {
+      console.log('🔔 [NotificationsScreen] New notification received:', data);
+      setNotifications((prev) => [data, ...prev]); // prepend notification
+    };
+
+    socket.on('newNotification', handleNewNotification);
+
+    return () => {
+      socket.off('newNotification', handleNewNotification);
+    };
   }, []);
 
   // 👉 Handler Accept Invitation
