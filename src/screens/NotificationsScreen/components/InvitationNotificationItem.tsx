@@ -6,14 +6,16 @@ interface InvitationNotificationItemProps {
   title: string;
   description?: string;
   time?: string;
+  status: 'pending' | 'accepted' | 'declined';
   onAccept: () => void;
   onDecline: () => void;
 }
 
-const InvitationNotificationItem: React.FC<InvitationNotificationItemProps> = ({
+const InvitationNotificationItemComponent: React.FC<InvitationNotificationItemProps> = ({
   title,
   description,
   time,
+  status,
   onAccept,
   onDecline,
 }) => {
@@ -30,20 +32,38 @@ const InvitationNotificationItem: React.FC<InvitationNotificationItemProps> = ({
         {description && <Text style={styles.description}>{description}</Text>}
         {time && <Text style={styles.time}>{time}</Text>}
 
-        <View style={styles.actions}>
-          <TouchableOpacity style={[styles.button, styles.accept]} onPress={onAccept}>
-            <Text style={styles.buttonText}>Chấp nhận</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.decline]} onPress={onDecline}>
-            <Text style={styles.buttonText}>Từ chối</Text>
-          </TouchableOpacity>
-        </View>
+        {status === 'pending' && (
+          <View style={styles.actions}>
+            <TouchableOpacity style={[styles.button, styles.accept]} onPress={onAccept}>
+              <Text style={styles.buttonText}>Chấp nhận</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.button, styles.decline]} onPress={onDecline}>
+              <Text style={styles.buttonText}>Từ chối</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {status === 'accepted' && (
+          <View style={styles.statusContainer}>
+            <Text style={[styles.statusText, styles.acceptedText]}>
+              ✅ Bạn đã chấp nhận lời mời
+            </Text>
+          </View>
+        )}
+
+        {status === 'declined' && (
+          <View style={styles.statusContainer}>
+            <Text style={[styles.statusText, styles.declinedText]}>
+              ❌ Bạn đã từ chối lời mời
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );
 };
 
-export default InvitationNotificationItem;
+export default React.memo(InvitationNotificationItemComponent);
 
 const styles = StyleSheet.create({
   container: {
@@ -96,5 +116,21 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  statusContainer: {
+    marginTop: 8,
+    padding: 8,
+    borderRadius: 5,
+    backgroundColor: '#f0f0f0',
+  },
+  statusText: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  acceptedText: {
+    color: '#28a745',
+  },
+  declinedText: {
+    color: '#dc3545',
   },
 });

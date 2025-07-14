@@ -8,7 +8,7 @@ interface NotificationItemProps {
   time?: string;
 }
 
-const NotificationItem: React.FC<NotificationItemProps> = ({ title, description, time }) => {
+const NotificationItemComponent: React.FC<NotificationItemProps> = ({ title, description, time }) => {
   return (
     <View style={styles.notificationItem}>
       <Icon
@@ -26,7 +26,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ title, description,
   );
 };
 
-export default NotificationItem;
+export default React.memo(NotificationItemComponent);
 
 const styles = StyleSheet.create({
   notificationItem: {

@@ -8,6 +8,8 @@ import GoogleLoginButton from './components/GoogleLoginButton';
 import useUserStore from '../../../store/useUserStore';
 import { loginUser, loginGoogleUser } from '../../../services/api/authApi';
 
+import socket from '../../../services/socket/socket';
+
 const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -54,11 +56,17 @@ const LoginScreen: React.FC = () => {
       await AsyncStorage.setItem('token', user.token);
       setUser(user);
 
+      // 🔌 Connect socket sau khi login Google thành công
+      socket.auth = { token: user.token };
+      socket.connect();
+      console.log('🔌 [handleGoogleLogin] Socket connect called');
+
     } catch (error: any) {
       console.error('❌ handleGoogleLogin error:', error);
       Alert.alert('Lỗi', 'Đăng nhập Google thất bại');
     }
   };
+
 
   return (
     <View style={styles.container}>

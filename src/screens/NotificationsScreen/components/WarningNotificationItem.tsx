@@ -8,7 +8,7 @@ interface WarningNotificationItemProps {
   time?: string;
 }
 
-const WarningNotificationItem: React.FC<WarningNotificationItemProps> = ({
+const WarningNotificationItemComponent: React.FC<WarningNotificationItemProps> = ({
   title,
   description,
   time,
@@ -30,7 +30,7 @@ const WarningNotificationItem: React.FC<WarningNotificationItemProps> = ({
   );
 };
 
-export default WarningNotificationItem;
+export default React.memo(WarningNotificationItemComponent);
 
 const styles = StyleSheet.create({
   notificationItem: {

@@ -32,3 +32,40 @@ export const inviteMember = async (token: string, data: InviteMemberInput) => {
   }
 };
 
+export const acceptInvitation = async (token: string, invitationId: string) => {
+  console.log('🔑 Sending token:', token);
+  try {
+    const res = await axios.post(
+      `/member/invitation/${invitationId}/accept`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    console.log('✅ Accept invitation response:', res.data);
+    return res.data.data;
+  } catch (err: any) {
+    console.error('❌ Error in acceptInvitation:', err);
+    console.log('🔥 err.response:', err?.response?.data);
+    throw err;
+  }
+};
+
+export const declineInvitation = async (token: string, invitationId: string) => {
+  console.log('🔑 Sending token:', token);
+  try {
+    const res = await axios.post(
+      `/member/invitation/${invitationId}/decline`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    console.log('✅ Decline invitation response:', res.data);
+    return res.data.data;
+  } catch (err: any) {
+    console.error('❌ Error in declineInvitation:', err);
+    console.log('🔥 err.response:', err?.response?.data);
+    throw err;
+  }
+};

@@ -1,10 +1,11 @@
-// src/utils/socket.ts
+
 import io from 'socket.io-client';
 import { SOCKET_URL } from '../../constants/env';
 
 // Tạo socket instance
 const socket = io(SOCKET_URL, {
   autoConnect: false,
+  transports: ['websocket'],
 });
 
 // ⚡ Log khi connect thành công

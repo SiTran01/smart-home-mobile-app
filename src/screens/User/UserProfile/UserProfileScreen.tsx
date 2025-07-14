@@ -12,6 +12,8 @@ import EmailRow from './components/EmailRow';
 import TwitterRow from './components/TwitterRow';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
+import socket from '../../../services/socket/socket';
+
 
 const UserProfileScreen: React.FC = () => {
   const user = useUserStore(state => state.user);
@@ -29,12 +31,19 @@ const UserProfileScreen: React.FC = () => {
             webClientId: '1078806341508-9kmi0bvogdtv7g8uokpm4bv9bmpdusck.apps.googleusercontent.com',
             offlineAccess: true,
           });
+          
           await GoogleSignin.signOut(); // ✅ clear Google account cache
           await AsyncStorage.removeItem('token');
           setUser(null);
 
           resetAllStores(); // 🔥 reset toàn bộ stores về initial state
-          
+
+          // 🔌 Disconnect socket khi logout
+          if (socket.connected) {
+            socket.disconnect();
+            console.log('🔌 [Logout] Socket disconnected');
+          }
+
         } catch (error) {
           console.error('❌ Logout error:', error);
         }

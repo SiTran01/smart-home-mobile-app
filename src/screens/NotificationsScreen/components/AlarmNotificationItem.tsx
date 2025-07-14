@@ -8,7 +8,7 @@ interface AlarmNotificationItemProps {
   time?: string;
 }
 
-const AlarmNotificationItem: React.FC<AlarmNotificationItemProps> = ({
+const AlarmNotificationItemComponent: React.FC<AlarmNotificationItemProps> = ({
   title,
   description,
   time,
@@ -29,8 +29,6 @@ const AlarmNotificationItem: React.FC<AlarmNotificationItemProps> = ({
     </View>
   );
 };
-
-export default AlarmNotificationItem;
 
 const styles = StyleSheet.create({
   notificationItem: {
@@ -62,3 +60,5 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 });
+
+export default React.memo(AlarmNotificationItemComponent);
