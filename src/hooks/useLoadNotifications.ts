@@ -35,10 +35,10 @@ const useLoadNotifications = (token: string | null) => {
 
         if (pageNumber === 0) {
           setNotifications(newNotifications);
-          console.log('[useLoadNotifications] Set initial notifications to store');
+          console.log('[useLoadNotifications] Set initial notifications to store:', newNotifications);
         } else {
           newNotifications.forEach(n => addNotification(n));
-          console.log('[useLoadNotifications] Added notifications to store');
+          console.log('[useLoadNotifications] Added notifications to store:', newNotifications);
         }
 
         setPage(pageNumber);

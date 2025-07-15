@@ -14,6 +14,7 @@ import UserProfile from '../screens/User/UserProfile/UserProfileScreen';
 import ManageRoom from '../screens/Room/ManageRoomScreen/ManageRoomScreen';
 import SettingRoom from '../screens/Room/SettingRoomScreen/SettingRoomScreen';
 import InviteMember from '../screens/User/InviteMember/InviteMemberScreen'; // ✅ import InviteMember screen
+import MemberProfile from '../screens/User/MemberProfile/MemberProfileScreen'; // ✅ import MemberProfile screen
 
 export type RootStackParamList = {
   Login: undefined;
@@ -28,6 +29,7 @@ export type RootStackParamList = {
   ManageRoom: { homeId: string };
   SettingRoom: { roomId: string };
   InviteMember: { homeId: string }; // ✅ thêm route cho InviteMember
+  MemberProfile: { memberId: string }; // ✅ thêm route cho MemberProfile
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -53,6 +55,7 @@ const RootNavigator = () => {
           <Stack.Screen name="ManageRoom" component={ManageRoom} options={{ headerShown: true }} />
           <Stack.Screen name="SettingRoom" component={SettingRoom} options={{ headerShown: true }} />
           <Stack.Screen name="InviteMember" component={InviteMember} options={{ headerShown: true }} />
+          <Stack.Screen name="MemberProfile" component={MemberProfile} options={{ headerShown: true }} />
         </>
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} />

@@ -3,13 +3,56 @@ import api from '../axiosInstance';
 export interface Notification {
   _id: string;
   user: string;
-  type: string;
+  type: 'invitation' | 'invitation_response' | 'device' | 'system' | 'warning' | 'alarm';
   title: string;
   message?: string;
-  data?: Record<string, any>;
   isRead: boolean;
   createdAt: string;
   updatedAt: string;
+
+  // Populated invitation data
+  invitationDataId?: {
+    _id: string;
+    status: 'pending' | 'accepted' | 'declined';
+    role: 'admin' | 'member';
+    message?: string;
+    home?: {
+      _id: string;
+      name: string;
+    };
+    inviter?: {
+      _id: string;
+      name: string;
+    };
+    invitee?: {
+      _id: string;
+      name: string;
+    };
+  };
+
+  // Populated device data
+  deviceDataId?: {
+    _id: string;
+    name: string;
+    type: string;
+    status: string;
+    // thêm fields khác của device nếu cần
+  };
+
+  // Populated room data
+  roomDataId?: {
+    _id: string;
+    name: string;
+  };
+
+  // Populated home data
+  homeDataId?: {
+    _id: string;
+    name: string;
+  };
+
+  // Nếu mày dùng field data dynamic
+  data?: Record<string, any>;
 }
 
 // ✅ Lấy toàn bộ notifications

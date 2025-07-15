@@ -14,6 +14,7 @@ import { updateHome } from '../../../services/api/homeApi';
 import { fetchUserById } from '../../../services/api/authApi';
 import useHomeStore from '../../../store/useHomeStore';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import useUserStore from '../../../store/useUserStore';
 
 type SettingHomeRouteProp = RouteProp<RootStackParamList, 'SettingHome'>;
 
@@ -22,6 +23,7 @@ const SettingHomeScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { id, name } = route.params;
+  const { user } = useUserStore();
 
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [homeName, setHomeName] = useState(name);
@@ -135,7 +137,8 @@ const SettingHomeScreen: React.FC = () => {
 
       <MembersList
         members={memberList}
-        currentUserId="1" // TODO: thay id người login thật
+        currentUserId={user._id} // TODO: thay id người login thật
+        onMemberPress={(memberId) => navigation.navigate('MemberProfile', { memberId })}
         onInvitePress={handleInviteMember} // 🆕 pass navigate callback
       />
 

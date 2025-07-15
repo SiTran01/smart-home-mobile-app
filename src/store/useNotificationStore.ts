@@ -12,6 +12,7 @@ interface NotificationState {
   setPage: (page: number) => void;
   setHasMore: (hasMore: boolean) => void;
   reset: () => void;
+  resetStore: () => void;
 }
 
 const useNotificationStore = create<NotificationState>((set, get) => ({
@@ -28,15 +29,27 @@ const useNotificationStore = create<NotificationState>((set, get) => ({
   setNotifications: (list) => set({ notifications: list }),
 
   appendNotifications: (list) => {
-    const state = get();
-    const newNoti = list.filter(n => !state.notifications.find(sn => sn._id === n._id));
-    set({ notifications: [...state.notifications, ...newNoti] });
+    const existingNoti = get().notifications ?? []; // fallback []
+
+    const newNoti = list.filter(n =>
+      !existingNoti.find(sn => sn._id === n._id)
+    );
+
+    set({ notifications: [...existingNoti, ...newNoti] });
   },
 
   updateNotificationStatus: (id, status) => {
     set({
       notifications: get().notifications.map(n =>
-        n._id === id ? { ...n, data: { ...n.data, status } } : n
+        n._id === id
+          ? {
+              ...n,
+              data: { ...n.data, status },
+              invitationDataId: n.invitationDataId
+                ? { ...n.invitationDataId, status }
+                : n.invitationDataId,
+            }
+          : n
       ),
     });
   },
@@ -45,6 +58,12 @@ const useNotificationStore = create<NotificationState>((set, get) => ({
   setHasMore: (hasMore) => set({ hasMore }),
 
   reset: () => set({ notifications: [], page: 1, hasMore: true }),
+
+  resetStore: () => set({
+    notifications: [],
+    page: 1,
+    hasMore: true,
+  }),
 }));
 
 export default useNotificationStore;

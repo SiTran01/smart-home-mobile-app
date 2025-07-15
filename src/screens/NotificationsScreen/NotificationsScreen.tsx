@@ -7,6 +7,7 @@ import NotificationItem from './components/NotificationItem';
 import WarningNotificationItem from './components/WarningNotificationItem';
 import AlarmNotificationItem from './components/AlarmNotificationItem';
 import InvitationNotificationItem from './components/InvitationNotificationItem';
+import InvitationResponseNotificationItem from './components/InvitationResponseNotificationItem';
 
 import { getNotificationsPaged, Notification } from '../../services/api/notificationApi';
 import { acceptInvitation, declineInvitation } from '../../services/api/inviteMemberApi';
@@ -27,22 +28,20 @@ const NotificationsScreen: React.FC = () => {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowContent(true);
-    }, 500); // 👈 show loading tối thiểu 0.5s
-
+    const timer = setTimeout(() => setShowContent(true), 500);
     return () => clearTimeout(timer);
   }, []);
 
   const loadMoreNotifications = useCallback(async () => {
-    if (loading || !hasMore) return;
+    if (loading) return;
+    if (hasMore === false) return; // ✅ vẫn cho phép load nếu hasMore = 0 hoặc true
 
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) return;
 
-      const skip = notifications.length;
+      const skip = notifications?.length ?? 0;
       console.log('🔎 Loading notifications | skip:', skip, 'limit:', PAGE_SIZE);
 
       const newNotifications = await getNotificationsPaged(token, skip, PAGE_SIZE);
@@ -62,9 +61,13 @@ const NotificationsScreen: React.FC = () => {
   const handleAccept = async (item: Notification) => {
     const token = await AsyncStorage.getItem('token');
     if (!token) return;
+    if (!item.invitationDataId?._id) {
+      console.warn('❌ invitationDataId undefined, không thể Accept');
+      return;
+    }
 
     try {
-      await acceptInvitation(token, item.data._id);
+      await acceptInvitation(token, item.invitationDataId._id);
       updateNotificationStatus(item._id, 'accepted');
       Toast.show({
         type: 'success',
@@ -81,9 +84,13 @@ const NotificationsScreen: React.FC = () => {
   const handleDecline = async (item: Notification) => {
     const token = await AsyncStorage.getItem('token');
     if (!token) return;
+    if (!item.invitationDataId?._id) {
+      console.warn('❌ invitationDataId undefined, không thể decline');
+      return;
+    }
 
     try {
-      await declineInvitation(token, item.data._id);
+      await declineInvitation(token, item.invitationDataId._id);
       updateNotificationStatus(item._id, 'declined');
       Toast.show({
         type: 'info',
@@ -101,26 +108,77 @@ const NotificationsScreen: React.FC = () => {
 
     switch (item.type) {
       case 'warning':
-        return <WarningNotificationItem title={item.title} description={item.message} time={timeStr} />;
+        return (
+          <WarningNotificationItem
+            title={item.title}
+            description={item.message}
+            time={timeStr}
+          />
+        );
       case 'alarm':
-        return <AlarmNotificationItem title={item.title} description={item.message} time={timeStr} />;
-      case 'invitation':
-        const inviterName = item.data?.inviter?.name ?? 'Người mời';
-        const homeName = item.data?.home?.name ?? 'Home';
-        const role = item.data?.role ?? 'member';
+        return (
+          <AlarmNotificationItem
+            title={item.title}
+            description={item.message}
+            time={timeStr}
+          />
+        );
+      case 'invitation': {
+        const inviterName = item.invitationDataId?.inviter?.name ?? 'Người mời';
+        const homeName = item.invitationDataId?.home?.name? `Home "${item.invitationDataId.home.name}"`: 'Home';
+
+        const role = item.invitationDataId?.role ?? 'member';
+        const message = item.invitationDataId?.message || 'Bạn đã được mời tham gia home này.';
+
+        const status = item.invitationDataId?.status ?? 'pending';
 
         return (
           <InvitationNotificationItem
             title={item.title}
-            description={`${inviterName} đã mời bạn vào ${homeName} với vai trò ${role}.`}
+            description={`${inviterName} đã mời bạn vào ${homeName} với vai trò ${role}.\n\nThông điệp: ${message}`}
             time={timeStr}
-            status={item.data?.status ?? 'pending'}
+            status={status}
             onAccept={() => handleAccept(item)}
             onDecline={() => handleDecline(item)}
           />
+        );}
+      case 'invitation_response': {
+        const inviteeName = item.invitationDataId?.invitee?.name ?? 'Người tham gia';
+        const homeName = item.invitationDataId?.home?.name
+          ? `Home "${item.invitationDataId.home.name}"`
+          : 'Home';
+        const status = item.invitationDataId?.status ?? 'declined';
+        const role = item.invitationDataId?.role === 'member' ? 'thành viên' : 'quản trị viên';
+
+        if (status !== 'accepted' && status !== 'declined') {
+          return null;
+        }
+
+        const responseAction = status === 'declined' ? 'từ chối' : 'đồng ý';
+
+        const description =
+          item.title === 'Thành viên mới'
+            ? `${inviteeName} vừa trở thành ${role} của ${homeName}.`
+            : `${inviteeName} đã ${responseAction} lời mời tham gia ${homeName}.`;
+
+        return (
+          <InvitationResponseNotificationItem
+            title={item.title}
+            description={description}
+            time={timeStr}
+            status={status}
+          />
         );
+      }
+
       default:
-        return <NotificationItem title={item.title} description={item.message} time={timeStr} />;
+        return (
+          <NotificationItem
+            title={item.title}
+            description={item.message}
+            time={timeStr}
+          />
+        );
     }
   };
 
@@ -135,13 +193,17 @@ const NotificationsScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <FlatList
-        data={notifications}
+        data={notifications || []}
         keyExtractor={item => item._id}
         renderItem={renderItem}
         contentContainerStyle={styles.contentContainer}
         onEndReached={loadMoreNotifications}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={loading ? <ActivityIndicator style={{ marginVertical: 16 }} size="small" /> : null}
+        ListFooterComponent={
+          loading ? (
+            <ActivityIndicator style={{ marginVertical: 16 }} size="small" />
+          ) : null
+        }
         initialNumToRender={5}
         maxToRenderPerBatch={5}
         windowSize={5}

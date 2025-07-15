@@ -10,7 +10,6 @@ import { fetchUserInfo } from './services/api/authApi';
 import useLoadHomes from './hooks/useLoadHomes';
 import useSocketConnection from './hooks/useSocketConnection';
 import Toast from 'react-native-toast-message';
-import useLoadNotifications from './hooks/useLoadNotifications';
 
 const Main = () => {
   const { setUser } = useUserStore();
@@ -20,8 +19,7 @@ const Main = () => {
   useSocketConnection();
   useLoadHomes();
 
-  // 🚀 Gọi useLoadNotifications khi có token
-  useLoadNotifications(token);
+  // ❌ Xóa useLoadNotifications tại đây, chỉ load khi vào NotificationsScreen
 
   useEffect(() => {
     const loadUser = async () => {

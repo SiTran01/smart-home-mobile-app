@@ -11,10 +11,16 @@ export interface Member {
 interface Props {
   members: Member[];
   currentUserId: string;
-  onInvitePress?: () => void; // 🆕 thêm prop callback
+  onInvitePress?: () => void;
+  onMemberPress?: (memberId: string) => void; // 👈 callback click member
 }
 
-const MembersList: React.FC<Props> = ({ members, currentUserId, onInvitePress }) => {
+const MembersList: React.FC<Props> = ({
+  members,
+  currentUserId,
+  onInvitePress,
+  onMemberPress,
+}) => {
   const sortedMembers = [...members].sort((a, b) => {
     const rolePriority = { owner: 0, admin: 1, member: 2 };
     return rolePriority[a.role] - rolePriority[b.role];
@@ -36,7 +42,11 @@ const MembersList: React.FC<Props> = ({ members, currentUserId, onInvitePress })
             : 'Thành viên';
 
         return (
-          <View key={item._id} style={styles.memberRow}>
+          <TouchableOpacity
+            key={item._id}
+            style={styles.memberRow}
+            onPress={() => onMemberPress?.(item._id)} // 👈 gọi hàm cha
+          >
             <Image
               source={item.avatarUrl ? { uri: item.avatarUrl } : defaultAvatar}
               style={styles.avatar}
@@ -48,7 +58,7 @@ const MembersList: React.FC<Props> = ({ members, currentUserId, onInvitePress })
                 {isCurrentUser ? ' (Bạn)' : ''}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
         );
       })}
 
