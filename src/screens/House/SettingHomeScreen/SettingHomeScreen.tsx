@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet, Alert } from 'react-native';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { RootStackParamList } from '../../../navigation/RootNavigator';
 import HeaderHomeInfo from './components/HomeInfo';
@@ -10,11 +9,12 @@ import DeleteHomeButton from './components/DeleteHomeButton';
 import RenameHomeModal from './components/RenameHomeModal';
 import MembersList, { Member } from './components/MembersList';
 
-import { updateHome } from '../../../services/api/homeApi';
-import { fetchUserById } from '../../../services/api/authApi';
+import { updateHome, deleteHome } from '../../../services/api/homeApi';
 import useHomeStore from '../../../store/useHomeStore';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import useUserStore from '../../../store/useUserStore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 type SettingHomeRouteProp = RouteProp<RootStackParamList, 'SettingHome'>;
 
@@ -29,7 +29,7 @@ const SettingHomeScreen: React.FC = () => {
   const [homeName, setHomeName] = useState(name);
   const [memberList, setMemberList] = useState<Member[]>([]);
 
-  const { homes, updateHome: updateHomeInStore } = useHomeStore();
+  const { homes, updateHome: updateHomeInStore, deleteHome: removeHomeFromStore } = useHomeStore();
   const currentHome = homes.find(home => home._id === id);
 
   const roomsCount = currentHome?.rooms?.length ?? 0;
@@ -37,39 +37,24 @@ const SettingHomeScreen: React.FC = () => {
   const membersCount = (currentHome?.members?.length ?? 0) + 1;
 
   useEffect(() => {
-    const loadMembers = async () => {
-      if (!currentHome) return;
+    if (!currentHome) return;
 
-      try {
-        const token = await AsyncStorage.getItem('token');
-        if (!token) return;
-
-        const ownerRes = await fetchUserById(token, currentHome.owner!);
-        const owner: Member = {
-          _id: ownerRes._id,
-          name: ownerRes.name,
-          role: 'owner',
-          avatarUrl: ownerRes.picture,
-        };
-
-        const memberPromises = (currentHome.members || []).map(async (m) => {
-          const userRes = await fetchUserById(token, m.user);
-          return {
-            _id: userRes._id,
-            name: userRes.name,
-            role: m.role,
-            avatarUrl: userRes.picture,
-          } as Member;
-        });
-
-        const members = await Promise.all(memberPromises);
-        setMemberList([owner, ...members]);
-      } catch (err) {
-        console.error('❌ Error fetching members:', err);
-      }
+    // ✅ Build member list từ dữ liệu store (đã populate)
+    const owner: Member = {
+      _id: (currentHome.owner as any)._id,
+      name: (currentHome.owner as any).name,
+      role: 'owner',
+      avatarUrl: (currentHome.owner as any).picture,
     };
 
-    loadMembers();
+    const members: Member[] = (currentHome.members || []).map((m) => ({
+      _id: (m.user as any)._id,
+      name: (m.user as any).name,
+      role: m.role,
+      avatarUrl: (m.user as any).picture,
+    }));
+
+    setMemberList([owner, ...members]);
   }, [currentHome]);
 
   const handleRename = async (newName: string) => {
@@ -81,11 +66,14 @@ const SettingHomeScreen: React.FC = () => {
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) {
-        Alert.alert('Lỗi', 'Bạn chưa đăng nhập');
+        Alert.alert('Lỗi', 'Không tìm thấy token, vui lòng đăng nhập lại.');
         return;
       }
 
-      const updatedHome = await updateHome(token, id, { name: newName });
+      const updatedHome = await updateHome(token, id, {
+        name: newName,
+        updateType: 'rename',
+      });
       updateHomeInStore(updatedHome);
       setHomeName(updatedHome.name);
 
@@ -101,6 +89,26 @@ const SettingHomeScreen: React.FC = () => {
   const handleInviteMember = () => {
     navigation.navigate('InviteMember', { homeId: id });
   };
+
+  const handleDeleteHome = async (homeId: string) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        Alert.alert('Lỗi', 'Không tìm thấy token, vui lòng đăng nhập lại.');
+        return;
+      }
+
+      await deleteHome(token, homeId);
+      removeHomeFromStore(homeId);
+
+      Alert.alert('Thành công', `Đã xóa gia đình "${homeName}"`);
+      navigation.goBack();
+    } catch (error) {
+      console.error('❌ deleteHome error:', error);
+      Alert.alert('Lỗi', 'Không thể xóa gia đình');
+    }
+  };
+
 
   return (
     <ScrollView style={styles.container}>
@@ -137,12 +145,16 @@ const SettingHomeScreen: React.FC = () => {
 
       <MembersList
         members={memberList}
-        currentUserId={user._id} // TODO: thay id người login thật
+        currentUserId={user._id}
         onMemberPress={(memberId) => navigation.navigate('MemberProfile', { memberId })}
-        onInvitePress={handleInviteMember} // 🆕 pass navigate callback
+        onInvitePress={handleInviteMember}
       />
 
-      <DeleteHomeButton id={id} name={homeName} />
+      <DeleteHomeButton
+        id={id}
+        name={homeName}
+        onDelete={handleDeleteHome}
+      />
     </ScrollView>
   );
 };

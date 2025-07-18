@@ -69,3 +69,22 @@ export const declineInvitation = async (token: string, invitationId: string) => 
     throw err;
   }
 };
+
+export const removeMember = async (token: string, homeId: string, memberId: string) => {
+  console.log('🔑 Sending token:', token);
+  try {
+    const res = await axios.delete(
+      `/member/${homeId}/removemember/${memberId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    console.log('✅ Remove member response:', res.data);
+    return res.data.data;
+  } catch (err: any) {
+    console.error('❌ Error in removeMember:', err);
+    console.log('🔥 err.response:', err?.response?.data);
+    throw err;
+  }
+};
+

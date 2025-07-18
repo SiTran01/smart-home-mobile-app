@@ -1,7 +1,29 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
-import Toast from 'react-native-toast-message';
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { RootStackParamList } from '../../navigation/RootNavigator';
+import {
+  getNotificationsPaged,
+  Notification,
+} from '../../services/api/notificationApi';
+import {
+  acceptInvitation,
+  declineInvitation,
+} from '../../services/api/inviteMemberApi';
+import { getAllHomes } from '../../services/api/homeApi';
+
+import useNotificationStore from '../../store/useNotificationStore';
+import useHomeStore from '../../store/useHomeStore';
 
 import NotificationItem from './components/NotificationItem';
 import WarningNotificationItem from './components/WarningNotificationItem';
@@ -9,13 +31,16 @@ import AlarmNotificationItem from './components/AlarmNotificationItem';
 import InvitationNotificationItem from './components/InvitationNotificationItem';
 import InvitationResponseNotificationItem from './components/InvitationResponseNotificationItem';
 
-import { getNotificationsPaged, Notification } from '../../services/api/notificationApi';
-import { acceptInvitation, declineInvitation } from '../../services/api/inviteMemberApi';
-import useNotificationStore from '../../store/useNotificationStore';
-
 const PAGE_SIZE = 20;
 
+type NavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Notifications'
+>;
+
 const NotificationsScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
+
   const {
     notifications,
     appendNotifications,
@@ -23,6 +48,8 @@ const NotificationsScreen: React.FC = () => {
     hasMore,
     setHasMore,
   } = useNotificationStore();
+
+  const setHomes = useHomeStore((state) => state.setHomes);
 
   const [loading, setLoading] = useState(false);
   const [showContent, setShowContent] = useState(false);
@@ -33,8 +60,7 @@ const NotificationsScreen: React.FC = () => {
   }, []);
 
   const loadMoreNotifications = useCallback(async () => {
-    if (loading) return;
-    if (hasMore === false) return; // ✅ vẫn cho phép load nếu hasMore = 0 hoặc true
+    if (loading || hasMore === false) return;
 
     setLoading(true);
     try {
@@ -42,9 +68,11 @@ const NotificationsScreen: React.FC = () => {
       if (!token) return;
 
       const skip = notifications?.length ?? 0;
-      console.log('🔎 Loading notifications | skip:', skip, 'limit:', PAGE_SIZE);
-
-      const newNotifications = await getNotificationsPaged(token, skip, PAGE_SIZE);
+      const newNotifications = await getNotificationsPaged(
+        token,
+        skip,
+        PAGE_SIZE
+      );
 
       if (newNotifications.length < PAGE_SIZE) {
         setHasMore(false);
@@ -60,22 +88,29 @@ const NotificationsScreen: React.FC = () => {
 
   const handleAccept = async (item: Notification) => {
     const token = await AsyncStorage.getItem('token');
-    if (!token) return;
-    if (!item.invitationDataId?._id) {
-      console.warn('❌ invitationDataId undefined, không thể Accept');
-      return;
-    }
+    if (!token || item.entityType !== 'Invitation' || !item.entityId?._id) return;
 
     try {
-      await acceptInvitation(token, item.invitationDataId._id);
+      await acceptInvitation(token, item.entityId._id);
       updateNotificationStatus(item._id, 'accepted');
-      Toast.show({
-        type: 'success',
-        text1: 'Thành công',
-        text2: 'Bạn đã tham gia home thành công.',
-        position: 'top',
-        visibilityTime: 3000,
-      });
+
+      const homes = await getAllHomes(token);
+      setHomes(homes);
+
+      const joinedHomeId = item.entityId.home?._id;
+      if (joinedHomeId) {
+        useHomeStore.getState().setSelectedHomeId(joinedHomeId);
+      }
+
+      Alert.alert(
+        'Thành công',
+        'Bạn đã tham gia home thành công. Bạn có muốn khám phá ngay?',
+        [
+          { text: 'Hủy', style: 'cancel' },
+          { text: 'Khám phá', onPress: () => navigation.navigate('Home') },
+        ],
+        { cancelable: true }
+      );
     } catch (error) {
       console.error('❌ Accept invitation error:', error);
     }
@@ -83,15 +118,12 @@ const NotificationsScreen: React.FC = () => {
 
   const handleDecline = async (item: Notification) => {
     const token = await AsyncStorage.getItem('token');
-    if (!token) return;
-    if (!item.invitationDataId?._id) {
-      console.warn('❌ invitationDataId undefined, không thể decline');
-      return;
-    }
+    if (!token || item.entityType !== 'Invitation' || !item.entityId?._id) return;
 
     try {
-      await declineInvitation(token, item.invitationDataId._id);
+      await declineInvitation(token, item.entityId._id);
       updateNotificationStatus(item._id, 'declined');
+
       Toast.show({
         type: 'info',
         text1: 'Đã từ chối lời mời',
@@ -124,13 +156,16 @@ const NotificationsScreen: React.FC = () => {
           />
         );
       case 'invitation': {
-        const inviterName = item.invitationDataId?.inviter?.name ?? 'Người mời';
-        const homeName = item.invitationDataId?.home?.name? `Home "${item.invitationDataId.home.name}"`: 'Home';
+        if (item.entityType !== 'Invitation' || !item.entityId) return null;
 
-        const role = item.invitationDataId?.role ?? 'member';
-        const message = item.invitationDataId?.message || 'Bạn đã được mời tham gia home này.';
-
-        const status = item.invitationDataId?.status ?? 'pending';
+        const inviterName = item.entityId.inviter?.name ?? 'Người mời';
+        const homeName = item.entityId.home?.name
+          ? `Home "${item.entityId.home.name}"`
+          : 'Home';
+        const role = item.entityId.role ?? 'member';
+        const message =
+          item.entityId.message || 'Bạn đã được mời tham gia home này.';
+        const status = item.entityId.status ?? 'pending';
 
         return (
           <InvitationNotificationItem
@@ -141,21 +176,21 @@ const NotificationsScreen: React.FC = () => {
             onAccept={() => handleAccept(item)}
             onDecline={() => handleDecline(item)}
           />
-        );}
+        );
+      }
       case 'invitation_response': {
-        const inviteeName = item.invitationDataId?.invitee?.name ?? 'Người tham gia';
-        const homeName = item.invitationDataId?.home?.name
-          ? `Home "${item.invitationDataId.home.name}"`
-          : 'Home';
-        const status = item.invitationDataId?.status ?? 'declined';
-        const role = item.invitationDataId?.role === 'member' ? 'thành viên' : 'quản trị viên';
+        if (item.entityType !== 'Invitation' || !item.entityId) return null;
 
-        if (status !== 'accepted' && status !== 'declined') {
-          return null;
-        }
+        const inviteeName = item.entityId.invitee?.name ?? 'Người tham gia';
+        const homeName = item.entityId.home?.name
+          ? `Home "${item.entityId.home.name}"`
+          : 'Home';
+        const status = item.entityId.status ?? 'declined';
+        const role = item.entityId.role === 'member' ? 'thành viên' : 'quản trị viên';
+
+        if (!['accepted', 'declined'].includes(status)) return null;
 
         const responseAction = status === 'declined' ? 'từ chối' : 'đồng ý';
-
         const description =
           item.title === 'Thành viên mới'
             ? `${inviteeName} vừa trở thành ${role} của ${homeName}.`
@@ -170,7 +205,6 @@ const NotificationsScreen: React.FC = () => {
           />
         );
       }
-
       default:
         return (
           <NotificationItem
@@ -194,7 +228,7 @@ const NotificationsScreen: React.FC = () => {
     <View style={styles.container}>
       <FlatList
         data={notifications || []}
-        keyExtractor={item => item._id}
+        keyExtractor={(item) => item._id}
         renderItem={renderItem}
         contentContainerStyle={styles.contentContainer}
         onEndReached={loadMoreNotifications}

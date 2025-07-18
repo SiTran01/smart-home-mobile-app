@@ -16,6 +16,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ManageHouses'>;
 const ManageHousesScreen: React.FC<Props> = ({ navigation }) => {
   const homes = useHomeStore(state => state.homes);
   const addHome = useHomeStore(state => state.addHome);
+  const setSelectedHomeId = useHomeStore(state => state.setSelectedHomeId);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const handleSelectHouse = (house: { _id: string; name: string }) => {
@@ -35,6 +36,8 @@ const ManageHousesScreen: React.FC<Props> = ({ navigation }) => {
 
       const newHome = await createHome(token, { name: homeName });
       addHome(newHome);
+      // ✅ Set selectedHomeId là home mới vừa tạo
+      setSelectedHomeId(newHome._id);
       setShowCreateModal(false);
       Alert.alert('Thành công', `Đã tạo nhà: ${newHome.name}`);
     } catch (error) {

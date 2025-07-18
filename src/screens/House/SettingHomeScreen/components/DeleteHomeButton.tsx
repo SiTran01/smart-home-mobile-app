@@ -1,20 +1,13 @@
 import React from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
-
-import { deleteHome } from '../../../../services/api/homeApi';
-import useHomeStore from '../../../../store/useHomeStore';
 
 interface Props {
   id: string;
   name: string;
+  onDelete: (id: string) => void; // ✅ thêm callback do cha xử lý API/store
 }
 
-const DeleteHomeButton: React.FC<Props> = ({ id, name }) => {
-  const navigation = useNavigation();
-  const removeHome = useHomeStore((state) => state.deleteHome);
-
+const DeleteHomeButton: React.FC<Props> = ({ id, name, onDelete }) => {
   const handleDelete = () => {
     Alert.alert(
       'Xác nhận',
@@ -24,23 +17,8 @@ const DeleteHomeButton: React.FC<Props> = ({ id, name }) => {
         {
           text: 'Xóa',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              const token = await AsyncStorage.getItem('token');
-              if (!token) {
-                Alert.alert('Lỗi', 'Bạn chưa đăng nhập');
-                return;
-              }
-
-              await deleteHome(token, id);
-              removeHome(id);
-
-              Alert.alert('Thành công', `Đã xóa gia đình "${name}"`);
-              navigation.goBack();
-            } catch (error) {
-              console.error('❌ deleteHome error:', error);
-              Alert.alert('Lỗi', 'Không thể xóa gia đình');
-            }
+          onPress: () => {
+            onDelete(id); // ✅ gọi callback cha truyền xuống
           },
         },
       ]

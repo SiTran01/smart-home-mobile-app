@@ -10,52 +10,67 @@ export interface Notification {
   createdAt: string;
   updatedAt: string;
 
-  // Populated invitation data
-  invitationDataId?: {
-    _id: string;
-    status: 'pending' | 'accepted' | 'declined';
-    role: 'admin' | 'member';
-    message?: string;
-    home?: {
-      _id: string;
-      name: string;
-    };
-    inviter?: {
-      _id: string;
-      name: string;
-    };
-    invitee?: {
-      _id: string;
-      name: string;
-    };
-  };
-
-  // Populated device data
-  deviceDataId?: {
-    _id: string;
-    name: string;
-    type: string;
-    status: string;
-    // thêm fields khác của device nếu cần
-  };
-
-  // Populated room data
-  roomDataId?: {
-    _id: string;
-    name: string;
-  };
-
-  // Populated home data
-  homeDataId?: {
-    _id: string;
-    name: string;
-  };
-
-  // Nếu mày dùng field data dynamic
-  data?: Record<string, any>;
+  entityType: 'Invitation' | 'Device' | 'Room' | 'Home';
+  entityId: InvitationEntity | DeviceEntity | RoomEntity | HomeEntity | null;
 }
 
-// ✅ Lấy toàn bộ notifications
+export interface InvitationEntity {
+  _id: string;
+  status: 'pending' | 'accepted' | 'declined';
+  role: 'admin' | 'member';
+  alias: string; // 👈 thêm dòng này
+  message?: string;
+  home?: {
+    _id: string;
+    name: string;
+  };
+  inviter?: {
+    _id: string;
+    name: string;
+  };
+  invitee?: {
+    _id: string;
+    name: string;
+    email: string;
+    picture?: string;
+  };
+  createdAt: string;
+}
+
+export interface DeviceEntity {
+  _id: string;
+  name: string;
+  type: string;
+  status: string;
+  room?: {
+    _id: string;
+    name: string;
+  };
+  home?: {
+    _id: string;
+    name: string;
+  };
+}
+
+export interface RoomEntity {
+  _id: string;
+  name: string;
+  home?: {
+    _id: string;
+    name: string;
+  };
+}
+
+export interface HomeEntity {
+  _id: string;
+  name: string;
+  owner?: {
+    _id: string;
+    name: string;
+  };
+}
+
+// ✅ Get all notifications
 export const getAllNotifications = async (token: string): Promise<Notification[]> => {
   console.log('🔑 [getAllNotifications] Token:', token);
   const response = await api.get<{ success: boolean; data: Notification[] }>('/notification/getallnotification', {
@@ -65,6 +80,7 @@ export const getAllNotifications = async (token: string): Promise<Notification[]
   return response.data.data;
 };
 
+// ✅ Get notifications paginated
 export const getNotificationsPaged = async (
   token: string,
   skip = 0,

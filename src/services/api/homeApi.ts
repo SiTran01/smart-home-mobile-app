@@ -55,12 +55,20 @@ export const deleteHome = async (token: string, homeId: string): Promise<DeleteH
   return response.data;
 };
 
+
+
+
+/**
+ * ✅ Update home
+ */
+
 interface UpdateHomeDto {
   name?: string;
-  // thêm các field có thể update nếu backend cho phép
+  address?: string;
+  description?: string;
+  updateType?: 'rename' | 'change_address' | 'update_description';
 }
 
-// ✅ Update home
 export const updateHome = async (
   token: string,
   homeId: string,
@@ -69,9 +77,11 @@ export const updateHome = async (
   console.log('🔑 [updateHome] Token:', token);
   console.log('📝 [updateHome] homeId:', homeId);
   console.log('📝 [updateHome] Data:', data);
+
   const response = await api.put<Home>(`/home/${homeId}`, data, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
   console.log('✅ [updateHome] Response:', response.data);
   return response.data;
 };
