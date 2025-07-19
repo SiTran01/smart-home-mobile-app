@@ -23,10 +23,11 @@ const useNotificationStore = create<NotificationState>((set, get) => ({
   hasMore: true,
 
   addNotification: async (notification) => {
-    const exists = get().notifications.find(n => n._id === notification._id);
+    const exists = get().notifications.find(n => n._id === notification._id); 
     if (exists) return;
 
-    const { addMemberToHome, deleteHome, setHomes, homes } = useHomeStore.getState();
+    const { addMemberToHome, deleteHome, setHomes, homes, addRoomToHome } = useHomeStore.getState();
+
     const currentUserId = useUserStore.getState().user?._id;
 
     // ✅ Handle invitation_response ➔ add member vào home
@@ -119,10 +120,97 @@ const useNotificationStore = create<NotificationState>((set, get) => ({
         setHomes(newHomes);
     }
 
+    // ✅ Handle room_created ➔ add room to home store
+    // ✅ Handle room_created ➔ add room to home store
+  if (notification.type === 'room_created' && notification.entityType === 'Room' && notification.entityId) {
+    console.log('🏠 [NotificationStore] Room created notification received:', notification.entityId);
+    const room = notification.entityId;
+    const homeId = typeof room.home === 'string' ? room.home : room.home._id;
+    console.log('[DEBUG] room._id:', room._id);
+    console.log('[DEBUG] room.home:', room.home);
+    console.log('[DEBUG] derived homeId:', homeId);
+    if (homeId && room._id) {
+      console.log('[NotificationStore] Adding room to home in store', homeId, room);
+      addRoomToHome(homeId, {
+        _id: room._id,
+        name: room.name,
+        area: room.area || 'General',
+      });
+
+      console.log(`✅ [NotificationStore] Added room ${room.name} (${room._id}) to home ${homeId}`);
+    } else {
+      console.warn('[NotificationStore] Missing homeId or roomId in notification.entityId for room_created');
+    }
+  }
+
+  if (
+    notification.type === 'room_renamed' &&
+    notification.entityType === 'Room' &&
+    notification.entityId
+  ) {
+    const room = notification.entityId;
+    const homeId = typeof room.home === 'string' ? room.home : room.home._id;
+
+    console.log('🏠 [NotificationStore] Room rename notification received:', room);
+
+    if (homeId && room._id) {
+      const { homes, setHomes } = useHomeStore.getState();
+
+      const updatedHomes = homes.map(home => {
+        if (home._id !== homeId || !home.rooms) return home;
+
+        // ✅ Update room name only (do not overwrite room object)
+        const updatedRooms = home.rooms.map(r =>
+          r._id === room._id
+            ? { ...r, name: room.name }
+            : r
+        );
+
+        console.log(`✅ [NotificationStore] Updated room name: ${room.name} (${room._id}) in home ${homeId}`);
+
+        return { ...home, rooms: updatedRooms };
+      });
+
+      setHomes(updatedHomes);
+    } else {
+      console.warn('[NotificationStore] Missing homeId or roomId in notification.entityId for room_renamed');
+    }
+  }
+
+
+  if (
+    notification.type === 'room_deleted' &&
+    notification.entityType === 'Room' &&
+    notification.entityId
+  ) {
+    const roomId = typeof notification.entityId === 'string'
+      ? notification.entityId
+      : notification.entityId._id;
+
+    console.log('🏠 [NotificationStore] Room deleted notification received:', roomId);
+
+    const { homes, setHomes } = useHomeStore.getState();
+
+    const updatedHomes = homes.map(home => {
+      if (!home.rooms) return home;
+
+      const newRooms = home.rooms.filter(r => r._id !== roomId);
+
+      if (newRooms.length !== home.rooms.length) {
+        console.log(`✅ [NotificationStore] Removed room ${roomId} from home ${home._id}`);
+        return { ...home, rooms: newRooms };
+      }
+
+      return home;
+    });
+
+    setHomes(updatedHomes);
+  }
+
+
     // ✅ Cuối cùng add notification vào store
     set({ notifications: [notification, ...get().notifications] });
     },
-
 
 
   setNotifications: (list) => set({ notifications: list }),

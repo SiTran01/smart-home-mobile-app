@@ -1,11 +1,17 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export interface Room {
+  _id: string;
+  name: string;
+  area: string;
+}
+
 export interface Home {
   _id: string;
   name: string;
   owner?: string;
-  rooms?: string[];
+  rooms?: Room[];
   devices?: string[];
   createdAt?: string;
   updatedAt?: string;
@@ -17,7 +23,7 @@ export interface Home {
       picture?: string;
     };
     role: "admin" | "user";
-    alias: string; // ✅ added alias as required field
+    alias: string;
   }[];
 }
 
@@ -30,19 +36,11 @@ interface HomeStore {
   updateHome: (home: Home) => void;
   deleteHome: (homeId: string) => void;
 
-  addMemberToHome: (
-    homeId: string,
-    member: {
-      user: {
-        _id: string;
-        name: string;
-        email: string;
-        picture?: string;
-      };
-      role: "admin" | "user";
-      alias: string; // ✅ added alias to param type
-    }
-  ) => void;
+  addMemberToHome: (homeId: string, member: Home["members"][0]) => void;
+
+  addRoomToHome: (homeId: string, room: Room) => void;
+  updateRoomInHome: (homeId: string, room: Room) => void;
+  deleteRoomFromHome: (homeId: string, roomId: string) => void;
 
   setSelectedHomeId: (homeId: string | null) => void;
   selectedHome: () => Home | null;
@@ -80,6 +78,7 @@ const useHomeStore = create<HomeStore>((set, get) => ({
       const newSelectedHomeId = state.selectedHomeId || home._id;
       AsyncStorage.setItem('selectedHomeId', newSelectedHomeId);
 
+      console.log(`🏠 [HomeStore] Added home: ${home.name} (${home._id})`);
       return {
         homes: [...state.homes, home],
         selectedHomeId: newSelectedHomeId,
@@ -90,7 +89,11 @@ const useHomeStore = create<HomeStore>((set, get) => ({
     set((state) => ({
       homes: state.homes.map((h) =>
         h._id === updatedHome._id
-          ? { ...h, name: updatedHome.name }
+          ? {
+              ...h,
+              name: updatedHome.name,
+              rooms: updatedHome.rooms ?? h.rooms,
+            }
           : h
       ),
     })),
@@ -111,6 +114,7 @@ const useHomeStore = create<HomeStore>((set, get) => ({
         AsyncStorage.removeItem('selectedHomeId');
       }
 
+      console.log(`🗑️ [HomeStore] Deleted home ${homeId}`);
       return {
         homes: newHomes,
         selectedHomeId: newSelectedHomeId,
@@ -119,22 +123,68 @@ const useHomeStore = create<HomeStore>((set, get) => ({
 
   addMemberToHome: (homeId, member) =>
     set((state) => {
-      console.log(`🔧 [HomeStore] Adding member to homeId=${homeId}`);
-      console.log('👤 Member data:', member);
+      console.log(`🔧 [HomeStore] Adding member to homeId=${homeId}`, member);
 
       const updatedHomes = state.homes.map((h) => {
         if (h._id === homeId) {
-          console.log(`✅ Added member to home ${homeId}:`, member);
           return {
             ...h,
-            members: [...(h.members || []), member], // 👈 member now includes alias
+            members: [...(h.members || []), member],
           };
         }
         return h;
       });
 
-      console.log('🏠 Updated homes:', updatedHomes);
+      return { homes: updatedHomes };
+    }),
 
+  addRoomToHome: (homeId, room) =>
+    set((state) => {
+      const updatedHomes = state.homes.map((h) => {
+        if (h._id === homeId) {
+          return {
+            ...h,
+            rooms: [...(h.rooms || []), room],
+          };
+        }
+        return h;
+      });
+
+      console.log(`✅ [HomeStore] Added room ${room._id} to home ${homeId}`);
+      return { homes: updatedHomes };
+    }),
+
+  updateRoomInHome: (homeId, updatedRoom) =>
+    set((state) => {
+      const updatedHomes = state.homes.map((h) => {
+        if (h._id === homeId) {
+          return {
+            ...h,
+            rooms: h.rooms?.map((r) =>
+              r._id === updatedRoom._id ? { ...r, ...updatedRoom } : r
+            ),
+          };
+        }
+        return h;
+      });
+
+      console.log(`✅ [HomeStore] Updated room ${updatedRoom._id} in home ${homeId}`);
+      return { homes: updatedHomes };
+    }),
+
+  deleteRoomFromHome: (homeId, roomId) =>
+    set((state) => {
+      const updatedHomes = state.homes.map((h) => {
+        if (h._id === homeId) {
+          return {
+            ...h,
+            rooms: h.rooms?.filter((r) => r._id !== roomId),
+          };
+        }
+        return h;
+      });
+
+      console.log(`🗑️ [HomeStore] Deleted room ${roomId} from home ${homeId}`);
       return { homes: updatedHomes };
     }),
 

@@ -1,57 +1,27 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import useRoomStore from '../../../store/useRoomStore';
 import useHomeStore from '../../../store/useHomeStore';
 import { RootStackParamList } from '../../../navigation/RootNavigator';
 
 import RoomCard from './components/RoomCard';
 import CreateNewRoomModal from './components/CreateNewRoomModal';
-import { createRoom, getAllRooms } from '../../../services/api/roomApi';
-import { getAllHomes } from '../../../services/api/homeApi';
+import { createRoom, deleteRoom } from '../../../services/api/roomApi';
 
 const ManageRoomScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute();
   const { homeId } = route.params as { homeId: string };
 
-  const { rooms, setRooms, addRoom } = useRoomStore();
-  const { setHomes } = useHomeStore();
-
+  const { homes, addRoomToHome, deleteRoomFromHome } = useHomeStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Load all rooms on mount
-  useEffect(() => {
-    const fetchRooms = async () => {
-      setLoading(true);
-      try {
-        const token = await AsyncStorage.getItem('token');
-        if (!token) {
-          Alert.alert('Lỗi', 'Bạn chưa đăng nhập');
-          return;
-        }
-
-        const roomsData = await getAllRooms(token, homeId);
-        console.log('[ManageRoomScreen] getAllRooms response:', roomsData); // ✅ log response
-        setRooms(roomsData);
-      } catch (error) {
-        console.error('❌ Error fetching rooms:', error);
-        Alert.alert('Lỗi', 'Không thể tải danh sách phòng');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRooms();
-  }, [homeId]);
-
-  // ✅ Filter rooms của đúng homeId truyền vào
-  const filteredRooms = rooms.filter(room => room.home === homeId);
+  const currentHome = homes.find(h => h._id === homeId);
 
   const handleAddRoom = async (roomName: string) => {
     setLoading(true);
@@ -63,18 +33,45 @@ const ManageRoomScreen: React.FC = () => {
       }
 
       const newRoom = await createRoom(token, { name: roomName, homeId });
-      console.log('[ManageRoomScreen] createRoom response:', newRoom); // ✅ log response
-      addRoom(newRoom);
+      console.log('[ManageRoomScreen] createRoom response:', newRoom);
 
-      const allHomes = await getAllHomes(token);
-      console.log('[ManageRoomScreen] getAllHomes response:', allHomes); // ✅ log response
-      setHomes(allHomes);
+      // ✅ Update HomeStore chỉ thêm room mới
+      addRoomToHome(homeId, newRoom);
     } catch (error) {
       console.error('❌ Error creating room:', error);
       Alert.alert('Lỗi', 'Không thể tạo phòng mới');
     } finally {
       setLoading(false);
+      setModalVisible(false);
     }
+  };
+
+  const handleDeleteRoom = async (roomId: string) => {
+    Alert.alert('Xoá phòng', 'Bạn có chắc chắn muốn xoá phòng này?', [
+      { text: 'Huỷ', style: 'cancel' },
+      {
+        text: 'Xoá',
+        style: 'destructive',
+        onPress: async () => {
+          setLoading(true);
+          try {
+            const token = await AsyncStorage.getItem('token');
+            if (!token) {
+              Alert.alert('Lỗi', 'Bạn chưa đăng nhập');
+              return;
+            }
+
+            await deleteRoom(token, roomId);
+            deleteRoomFromHome(homeId, roomId);
+          } catch (error) {
+            console.error('❌ Error deleting room:', error);
+            Alert.alert('Lỗi', 'Không thể xoá phòng');
+          } finally {
+            setLoading(false);
+          }
+        },
+      },
+    ]);
   };
 
   useLayoutEffect(() => {
@@ -92,10 +89,11 @@ const ManageRoomScreen: React.FC = () => {
     });
   }, [navigation]);
 
-  const renderItem = ({ item }: { item: typeof rooms[0] }) => (
+  const renderItem = ({ item }: { item: typeof currentHome.rooms[0] }) => (
     <RoomCard
       name={item.name}
       onPress={() => navigation.navigate('SettingRoom', { roomId: item._id })}
+      onDelete={() => handleDeleteRoom(item._id)}
     />
   );
 
@@ -103,14 +101,15 @@ const ManageRoomScreen: React.FC = () => {
     <View style={styles.container}>
       {loading && <ActivityIndicator size="large" color="green" />}
 
-      <FlatList
-        data={filteredRooms}
-        keyExtractor={(item) => item._id}
-        renderItem={renderItem}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>Chưa có phòng nào trong home này</Text>
-        }
-      />
+      {currentHome && currentHome.rooms && currentHome.rooms.length > 0 ? (
+        <FlatList
+          data={currentHome.rooms}
+          keyExtractor={(item) => item._id}
+          renderItem={renderItem}
+        />
+      ) : (
+        <Text style={styles.emptyText}>Chưa có phòng nào trong home này</Text>
+      )}
 
       <CreateNewRoomModal
         visible={modalVisible}
