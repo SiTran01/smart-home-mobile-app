@@ -5,6 +5,7 @@ import { SOCKET_URL } from '../../constants/env';
 // Tạo socket instance
 const socket = io(SOCKET_URL, {
   autoConnect: false,
+  secure: true,
   transports: ['websocket'],
 });
 
